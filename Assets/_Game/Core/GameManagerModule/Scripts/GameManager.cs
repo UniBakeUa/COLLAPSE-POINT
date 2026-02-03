@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using _Game.Core.GameManagerModule.Scripts.States;
 using _Game.Core.StateMashineModule.Scripts;
 using Zenject;
@@ -13,7 +14,7 @@ namespace _Game.Core.GameManagerModule.Scripts
         {
             GameStateMachine = new StateMachineBehaviour<StateBase>();
 
-            GameStateMachine.SetStates(new System.Collections.Generic.List<StateBase>
+            GameStateMachine.SetStates(new List<StateBase>
             {
                 new LoadingState(),
                 new MenuState(),
