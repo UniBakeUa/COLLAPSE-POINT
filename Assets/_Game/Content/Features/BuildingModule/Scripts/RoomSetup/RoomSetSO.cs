@@ -7,5 +7,14 @@ namespace _Game.Content.Features.BuildingModule.Scripts.RoomSetup
     public class RoomSetSO : ScriptableObject
     {
         public List<RoomForm> forms;
+        
+        private void OnValidate()
+        {
+            if (forms == null) return;
+            foreach (var form in forms)
+            {
+                form.BakeLayout();
+            }
+        }
     }
 }

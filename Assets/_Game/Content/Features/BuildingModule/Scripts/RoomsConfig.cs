@@ -8,6 +8,8 @@ namespace _Game.Content.Features.BuildingModule.Scripts
     [CreateAssetMenu(menuName = "Game/RoomsConfig", fileName = "RoomsConfig")]
     public class RoomsConfig : ScriptableObject
     {
+        public double spawnDelay;
+        
         public List<RoomSetSO> roomSets;
 
         public RoomForm GetRandomForm()

@@ -18,6 +18,10 @@
                 Container.BindInterfacesAndSelfTo<RoomGenerator>()
                     .AsSingle()
                     .NonLazy();
+                
+                Container.BindInterfacesAndSelfTo<RoomsSpawner>()
+                    .AsSingle()
+                    .NonLazy();
             }
         }
     }

@@ -1,3 +1,4 @@
+using System;
 using _Game.Content.Features.BuildingModule.Scripts.RoomSetup;
 using UnityEngine;
 using Zenject;
@@ -9,35 +10,22 @@ namespace _Game.Content.Features.BuildingModule.Scripts.Renderer
         [SerializeField] private GameObject roomPrefab;
 
         private RoomGenerator _roomGenerator;
+        private RoomsSpawner _roomsSpawner;
 
         [Header("Editor Visual")] [SerializeField]
         private bool showGrid;
-
+        
         [Inject]
-        public void Construct(RoomGenerator roomGenerator)
+        public void Construct(RoomGenerator roomGenerator, RoomsSpawner roomsSpawner)
         {
             _roomGenerator = roomGenerator;
+            _roomsSpawner = roomsSpawner;
         }
 
-        private void Start()
+        private void Awake()
         {
-            RenderRooms();
+            _roomsSpawner.OnRoomGenerated += SpawnRoomVisual;
         }
-
-        private void RenderRooms()
-        {
-            if (_roomGenerator == null)
-            {
-                Debug.LogError("RoomGenerator не прокинувся!");
-                return;
-            }
-
-            foreach (var room in _roomGenerator.Rooms)
-            {
-                SpawnRoomVisual(room);
-            }
-        }
-
         private void SpawnRoomVisual(RoomData room)
         {
             if (roomPrefab == null) return;

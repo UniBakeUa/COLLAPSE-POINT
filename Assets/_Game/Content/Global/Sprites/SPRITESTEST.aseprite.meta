@@ -24,7 +24,7 @@ ScriptedImporter:
     normalMapFilter: 0
     flipGreenChannel: 0
     swizzle: 50462976
-    isReadable: 0
+    isReadable: 1
     streamingMipmaps: 0
     streamingMipmapsPriority: 0
     vTOnly: 0
@@ -98,7 +98,7 @@ ScriptedImporter:
     addSortingGroup: 1
     addShadowCasters: 0
   importFileNodeState: 1
-  platformSettingsDirtyTick: 639057597447048794
+  platformSettingsDirtyTick: 639058100949313067
   textureAssetName: 
   singleSpriteImportData:
   - name: 
@@ -240,8 +240,92 @@ ScriptedImporter:
       x: 68
       y: 51
       width: 128
-      height: 193
+      height: 161
     spriteID: 561afbaac2a183f4a90fca1ed308d562
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 0, y: 0}
+  - name: SPRITESTEST_5
+    originalName: 
+    pivot: {x: 0.5, y: 0.5}
+    alignment: 0
+    border: {x: 0, y: 0, z: 0, w: 0}
+    customData: 
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 196
+      width: 48
+      height: 32
+    spriteID: 5c50c6a0264acc24a9207e257779c1ae
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 0, y: 0}
+  - name: SPRITESTEST_6
+    originalName: 
+    pivot: {x: 0.5, y: 0.5}
+    alignment: 0
+    border: {x: 0, y: 0, z: 0, w: 0}
+    customData: 
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 132
+      width: 48
+      height: 48
+    spriteID: 9084cc03eeafa434fbd7dd3dfdf3c4a2
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 0, y: 0}
+  - name: SPRITESTEST_7
+    originalName: 
+    pivot: {x: 0.5, y: 0.5}
+    alignment: 0
+    border: {x: 0, y: 0, z: 0, w: 0}
+    customData: 
+    rect:
+      serializedVersion: 2
+      x: 52
+      y: 336
+      width: 112
+      height: 112
+    spriteID: 4c197c8b19dc0f0429bbc1a959921a77
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 0, y: 0}
+  - name: SPRITESTEST_8
+    originalName: 
+    pivot: {x: 0.5, y: 0.5}
+    alignment: 0
+    border: {x: 0, y: 0, z: 0, w: 0}
+    customData: 
+    rect:
+      serializedVersion: 2
+      x: 68
+      y: 236
+      width: 80
+      height: 80
+    spriteID: 4b7f79c049b8345488bd800bb534c949
     spriteBone: []
     spriteOutline: []
     vertices: []
@@ -270,7 +354,7 @@ ScriptedImporter:
         x: 0
         y: 0
         width: 192
-        height: 240
+        height: 224
       spriteId: 9c31d641a9ee7714da04f227304d06e8
     linkedCells: []
     parentIndex: -1
@@ -326,5 +410,5 @@ ScriptedImporter:
   generatePhysicsShape: 0
   secondarySpriteTextures: []
   spritePackingTag: 
-  canvasSize: {x: 200, y: 256}
+  canvasSize: {x: 200, y: 456}
   previousTextureSize: {x: 256, y: 256}

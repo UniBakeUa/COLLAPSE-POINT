@@ -16,9 +16,67 @@ MonoBehaviour:
   - formName: Small Box
     sprites:
     - {fileID: -1683932418142316781, guid: ce3085f321ffdbe428a63ecb2980b82c, type: 3}
+    alphaThreshold: 0.1
+    savedMasks:
+    - difficulty: 0
+      cells:
+      - {x: 0, y: 0}
+      - {x: 0, y: 1}
+      - {x: 1, y: 0}
+      - {x: 1, y: 1}
+    cachedGridSize: {x: 2, y: 2}
   - formName: Big Box
     sprites:
     - {fileID: 2983421062051869505, guid: ce3085f321ffdbe428a63ecb2980b82c, type: 3}
+    alphaThreshold: 0.1
+    savedMasks:
+    - difficulty: 0
+      cells:
+      - {x: 0, y: 0}
+    cachedGridSize: {x: 1, y: 1}
   - formName: Paralelogramm
     sprites:
     - {fileID: -7220029730151703415, guid: ce3085f321ffdbe428a63ecb2980b82c, type: 3}
+    alphaThreshold: 0.1
+    savedMasks:
+    - difficulty: 0
+      cells:
+      - {x: 0, y: 0}
+      - {x: 1, y: 0}
+    cachedGridSize: {x: 2, y: 1}
+  - formName: L-shape
+    sprites:
+    - {fileID: -4149369516096377151, guid: ce3085f321ffdbe428a63ecb2980b82c, type: 3}
+    alphaThreshold: 0.1
+    savedMasks:
+    - difficulty: 0
+      cells:
+      - {x: 0, y: 0}
+      - {x: 0, y: 1}
+      - {x: 1, y: 0}
+    cachedGridSize: {x: 2, y: 2}
+  - formName: T-shape
+    sprites:
+    - {fileID: -1886674404477561198, guid: ce3085f321ffdbe428a63ecb2980b82c, type: 3}
+    alphaThreshold: 0.1
+    savedMasks:
+    - difficulty: 0
+      cells:
+      - {x: 0, y: 2}
+      - {x: 1, y: 0}
+      - {x: 1, y: 1}
+      - {x: 1, y: 2}
+      - {x: 2, y: 2}
+    cachedGridSize: {x: 3, y: 3}
+  - formName: small T-shape
+    sprites:
+    - {fileID: 3482023499842840720, guid: ce3085f321ffdbe428a63ecb2980b82c, type: 3}
+    alphaThreshold: 0.1
+    savedMasks:
+    - difficulty: 0
+      cells:
+      - {x: 0, y: 0}
+      - {x: 1, y: 0}
+      - {x: 1, y: 1}
+      - {x: 2, y: 0}
+    cachedGridSize: {x: 3, y: 2}

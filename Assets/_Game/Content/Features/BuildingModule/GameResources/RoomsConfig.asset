@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3775f0d24ee4737b5616ca8cbae8c88, type: 3}
   m_Name: RoomsConfig
   m_EditorClassIdentifier: 
+  spawnDelay: 0.0001
   roomSets:
   - {fileID: 11400000, guid: b46ac3e8c7904e043a5e9560d6d2c5ac, type: 2}
