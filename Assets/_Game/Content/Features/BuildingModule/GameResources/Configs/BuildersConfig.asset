@@ -9,9 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e3775f0d24ee4737b5616ca8cbae8c88, type: 3}
-  m_Name: RoomsConfig
+  m_Script: {fileID: 11500000, guid: 3feeefb48e7d4e609bca9dc10395e269, type: 3}
+  m_Name: BuildersConfig
   m_EditorClassIdentifier: 
-  spawnDelay: 0.0001
-  roomSets:
-  - {fileID: 11400000, guid: b46ac3e8c7904e043a5e9560d6d2c5ac, type: 2}
+  upgradeLevels:
+  - levelName: TEST
+    maxTeams: 3
+    buildSpeedMultiplier: 5000
+    upgradeCost: 0

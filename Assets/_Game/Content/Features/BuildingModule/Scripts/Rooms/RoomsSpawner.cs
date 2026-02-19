@@ -41,14 +41,7 @@ public class RoomsSpawner : IInitializable, IDisposable
 
     private async UniTaskVoid StartSpawning()
     {
-        try
-        {
-            await SpawnRoomsLoopAsync(_cts.Token);
-        }
-        catch (Exception e)
-        {
-            Debug.LogException(e);
-        }
+        await SpawnRoomsLoopAsync(_cts.Token);
     }
 
     public async UniTask SpawnRoomsLoopAsync(CancellationToken token)
@@ -75,7 +68,7 @@ public class RoomsSpawner : IInitializable, IDisposable
     public void Dispose()
     {
         _cts.Cancel();
-        _cts.Dispose();
         _roomGenerator?.Dispose();
+        _cts.Dispose();
     }
 }

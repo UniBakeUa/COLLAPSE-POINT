@@ -14,3 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startRoomSO: {fileID: 11400000, guid: 02e65009f1ee6c84aaa22280b189234e, type: 2}
   roomsConfig: {fileID: 11400000, guid: 5ede4367eac771c4288a3883a53c4611, type: 2}
+  supportsConfig: {fileID: 11400000, guid: 741fbcf8899725842b35bb673d989025, type: 2}
+  buildersConfig: {fileID: 11400000, guid: 495424cb25724124ba318e2482164f44, type: 2}

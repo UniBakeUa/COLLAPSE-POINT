@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4eddfe20a20480b84b064f9ce50a3bb, type: 3}
+  m_Name: SupportsConfig
+  m_EditorClassIdentifier: 
+  mixingPenalty: 0.8
+  horizontalWeightEfficiency: 0.8
+  maxHorizontalLengthMult: 10
+  maxVerticalDriftRatio: 2
+  supportEdgeMargin: 0.15
+  maskToCollide:
+    serializedVersion: 2
+    m_Bits: 192
+  minLength: 1
+  maxLength: 30
+  thickness: 0.1
+  minAngleDifference: 10
+  minHorizontalAngle: 25
+  maxHorizontalAngle: 75
+  minVerticalAngle: -25
+  maxVerticalAngle: 25
+  materialLevels:
+  - name: Wood
+    maxLoad: 1
+    buildTime: 4
+    supportSprite: {fileID: -1683932418142316781, guid: ce3085f321ffdbe428a63ecb2980b82c, type: 3}
+    visualColor: {r: 1, g: 1, b: 1, a: 1}
+    supportPrefab: {fileID: 7909847973673561777, guid: 2f147d84e46b8b542a73f4c7d2461ad3, type: 3}

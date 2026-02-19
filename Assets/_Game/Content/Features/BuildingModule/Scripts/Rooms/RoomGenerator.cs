@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using _Game.Content.Features.BuildingModule.Scripts.Builders;
 using _Game.Content.Features.BuildingModule.Scripts.RoomSetup;
 using UnityEngine;
+using Zenject;
 using Random = UnityEngine.Random;
 
 namespace _Game.Content.Features.BuildingModule.Scripts
@@ -9,16 +11,18 @@ namespace _Game.Content.Features.BuildingModule.Scripts
     public class RoomGenerator : IDisposable
     {
         public IReadOnlyList<RoomData> Rooms => _rooms;
-
-        private readonly RoomGrid _grid = new();
+        
         private readonly List<RoomData> _rooms = new();
 
+        [Inject] private RoomGrid _grid;
+        
         private readonly RoomSetSO _startRoom;
         private readonly RoomsConfig _roomsConfig;
 
         private int _nextRoomId = 0;
         private int _minY;
-
+        
+        
         private static readonly Vector2Int[] Directions =
         {
             Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right
@@ -41,6 +45,10 @@ namespace _Game.Content.Features.BuildingModule.Scripts
         public void Dispose()
         {
             _rooms.Clear();
+            _nextRoomId = 0;
+            _minY = 0;
+    
+            Debug.Log("RoomGenerator cleared.");
         }
 
         public bool ForceSpawnRoom(RoomForm form, RoomData.RoomDifficulty difficulty)
@@ -93,6 +101,22 @@ namespace _Game.Content.Features.BuildingModule.Scripts
             else if (direction == Vector2Int.down) currentPos += new Vector2Int(0, -formSize.y);
             else if (direction == Vector2Int.right) currentPos += new Vector2Int(baseRoom.Size.x, 0);
             else if (direction == Vector2Int.left) currentPos += new Vector2Int(-formSize.x, 0);
+            int minOverlap = 2;
+
+            if (direction == Vector2Int.up || direction == Vector2Int.down)
+            {
+                int overlapCells = 2;
+                int minX = baseRoom.GridPosition.x - formSize.x + overlapCells;
+                int maxX = baseRoom.GridPosition.x + baseRoom.Size.x - overlapCells;
+
+                currentPos.x = Random.Range(minX, maxX + 1);
+            }
+            else
+            {
+                int minY = baseRoom.GridPosition.y - formSize.y + minOverlap;
+                int maxY = baseRoom.GridPosition.y + baseRoom.Size.y - minOverlap;
+                currentPos.y = Random.Range(minY, maxY + 1);
+            }
 
             Vector2Int pushDir = -direction;
             Vector2Int bestValidPos = currentPos;
@@ -106,17 +130,7 @@ namespace _Game.Content.Features.BuildingModule.Scripts
 
                 if (testPos.y < _minY) break;
 
-                bool collision = false;
-                foreach (var offset in myCells)
-                {
-                    if (!_grid.IsFree(testPos + offset))
-                    {
-                        collision = true;
-                        break;
-                    }
-                }
-
-                if (!collision)
+                if (_grid.CanPlace(testPos, myCells))
                 {
                     bestValidPos = testPos;
                     foundValidAtLeastOnce = true;
@@ -165,10 +179,12 @@ namespace _Game.Content.Features.BuildingModule.Scripts
 
             if (_rooms.Count == 0)
                 _minY = form.GetGridSize().y / 3;
-                
-            
+
+
             RegisterRoom(room);
         }
+
+        [Inject] private BuildersManager managerBUILDERSTEST;
 
         private void RegisterRoom(RoomData room)
         {
@@ -178,6 +194,57 @@ namespace _Game.Content.Features.BuildingModule.Scripts
             foreach (var offset in occupiedCells)
             {
                 _grid.Occupy(room.GridPosition + offset, room.Id);
+            }
+
+            managerBUILDERSTEST.BuildForRoom(room, GetNeighbors(room));
+        }
+
+        public void RemoveRoom(RoomData room)
+        {
+            // 1. Видаляємо всі підпорки кімнати з сітки за їх списком ID
+            foreach (int supportId in room.AttachedSupportIds)
+            {
+                _grid.RemoveAllCellsByOwnerId(supportId);
+            }
+
+            // 2. Видаляємо саму кімнату з сітки
+            _grid.RemoveAllCellsByOwnerId(room.Id);
+
+            // 3. Очищаємо список у самому об'єкті
+            room.ClearSupports();
+        }
+
+        public List<RoomData> GetNeighbors(RoomData room)
+        {
+            List<RoomData> neighbors = new List<RoomData>();
+
+            int xStart = Mathf.FloorToInt(room.GridPosition.x);
+            int xEnd = xStart + Mathf.FloorToInt(room.Size.x);
+
+            int yBottom = Mathf.FloorToInt(room.GridPosition.y) - 1;
+            int yTop = Mathf.FloorToInt(room.GridPosition.y) + Mathf.FloorToInt(room.Size.y);
+
+            for (int x = xStart; x < xEnd; x++)
+            {
+                CheckAndAdd(new Vector2Int(x, yBottom), neighbors, room.Id);
+                CheckAndAdd(new Vector2Int(x, yTop), neighbors, room.Id);
+            }
+
+            return neighbors;
+        }
+
+        private void CheckAndAdd(Vector2Int pos, List<RoomData> neighbors, int selfId)
+        {
+            var cell = _grid.GetCell(pos);
+
+            if ((cell?.Type == RoomGrid.CellType.Room) && cell?.OwnerId != selfId)
+            {
+                var neighbor = _rooms.Find(r => r.Id == cell?.OwnerId);
+
+                if (neighbor != null && !neighbors.Contains(neighbor))
+                {
+                    neighbors.Add(neighbor);
+                }
             }
         }
 
