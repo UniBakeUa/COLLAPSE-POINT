@@ -9,10 +9,6 @@ namespace _Game.Core.GlobalStateMachine.Scripts.States
     {
         public override void InstallBindings()
         {
-            SignalBusInstaller.Install(Container);
-            
-            Container.DeclareSignal<BootstrapCompletedSignal>();
-            
             Container.Bind<GlobalStateBase>().To<BootstrapState>().AsSingle();
             Container.Bind<GlobalStateBase>().To<MainMenuState>().AsSingle();
             Container.Bind<GlobalStateBase>().To<GameplayState>().AsSingle();

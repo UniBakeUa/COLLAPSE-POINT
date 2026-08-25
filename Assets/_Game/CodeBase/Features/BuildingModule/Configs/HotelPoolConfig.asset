@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea06c0bc861845d4be180cbc82ee37d6, type: 3}
+  m_Name: HotelPoolConfig
+  m_EditorClassIdentifier: Unibake.Features::_Game.CodeBase.Features.BuildingModule.Scripts.Rooms.HotelPoolConfig
+  _hotelPrefabs:
+  - {fileID: -1253286025169419000, guid: c37fe26038fc99c43b056515d8b28825, type: 3}

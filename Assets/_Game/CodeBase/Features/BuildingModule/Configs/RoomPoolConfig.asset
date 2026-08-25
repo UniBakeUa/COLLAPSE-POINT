@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c108d7185b7a4840911afb248d13f053, type: 3}
+  m_Name: RoomPoolConfig
+  m_EditorClassIdentifier: Unibake.Features::_Game.CodeBase.Features.BuildingModule.Scripts.Rooms.RoomPoolConfig
+  _roomPrefabs:
+  - {fileID: 2611745770151683822, guid: f643b86b48014564bb8f6882aba6fb13, type: 3}
+  - {fileID: 2611745770151683822, guid: 0c0907fdb6e0d114e9ce2b30848874f6, type: 3}
+  - {fileID: 2611745770151683822, guid: 9678a08aee880454281dcaaddba7e312, type: 3}
+  - {fileID: 2611745770151683822, guid: d14d471dbb9739f4baaee6010b19df94, type: 3}

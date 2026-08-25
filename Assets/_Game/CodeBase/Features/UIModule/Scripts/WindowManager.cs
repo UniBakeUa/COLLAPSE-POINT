@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using UnityEngine.InputSystem;
 using Zenject;
 
@@ -24,7 +23,7 @@ namespace _Game.CodeBase.Features.UIModule.Scripts
 
         public void Dispose() { }
 
-        public void Tick()
+        public void Tick() 
         {
             if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
                 TryCloseTop();

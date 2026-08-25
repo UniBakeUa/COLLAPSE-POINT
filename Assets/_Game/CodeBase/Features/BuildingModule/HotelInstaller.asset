@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e02d7bd5dc049f6869fbc2fa60750d0, type: 3}
+  m_Name: HotelInstaller
+  m_EditorClassIdentifier: 
+  _roomPoolConfig: {fileID: 11400000, guid: 24e3d6fb004602e4e80dffbb8c196b83, type: 2}
+  _hotelPoolConfig: {fileID: 11400000, guid: 0eb1adad151572f43a81b3657f2a674c, type: 2}
+  _supportsConfig: {fileID: 11400000, guid: 9cb3e52d37dcdca46b1f74a164bda0d3, type: 2}
+  _roomsLayerMask:
+    serializedVersion: 2
+    m_Bits: 64
+  _roomPrefab: {fileID: 2611745770151683822, guid: f643b86b48014564bb8f6882aba6fb13, type: 3}
+  _supportPrefab: {fileID: 1436670047565511337, guid: 3269d7e5f0ebfd348bfcb506eb5d716e, type: 3}

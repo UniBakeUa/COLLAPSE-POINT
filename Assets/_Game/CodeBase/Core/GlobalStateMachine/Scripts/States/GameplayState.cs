@@ -13,7 +13,7 @@ namespace _Game.Core.GlobalStateMachine.Scripts.States
             _sceneLoader = sceneLoader;
         }
 
-        public override void Enter()
+        public override void Enter() 
         {
             LoadAsync().Forget();
         }
