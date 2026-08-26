@@ -187,7 +187,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Sprite: {fileID: -5623194428626525839, guid: 7b60fbc6056001b46a6e8ce06493d42d, type: 3}
   m_Color: {r: 0.735849, g: 0.735849, b: 0.735849, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -206,8 +206,8 @@ Transform:
   m_GameObject: {fileID: 170080315}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -10.25, z: 0}
-  m_LocalScale: {x: 9.31895, y: 10.7139, z: 10.7139}
+  m_LocalPosition: {x: 0, y: -6, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -242,7 +242,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -250,13 +250,13 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 6, y: 6}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 6, y: 6}
   m_EdgeRadius: 0
 --- !u!114 &170080320
 MonoBehaviour:
@@ -267,11 +267,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 170080315}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d4d0b3ddd8514d16a50768322970eb5a, type: 3}
+  m_Script: {fileID: 11500000, guid: 83307397960144b38fade9f166f3b95a, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Unibake.Features::_Game.CodeBase.Features.BuildingModule.Scripts.Rooms.Room
+  m_EditorClassIdentifier: Unibake.Features::_Game.CodeBase.Features.BuildingModule.Scripts.RoomsAndObjects.WeightReceiver
   _spriteRenderer: {fileID: 170080316}
-  _cachedSize: {x: 9.31895, y: 10.7139}
+  _boxCollider: {fileID: 170080319}
+  <Data>k__BackingField:
+    Id: 0
+    Size: {x: 6, y: 6}
+    Position: {x: 0, y: -6.5}
+    _baseWeight: 10
+    AdditionalWeight: 0
+    AttachedSupportIds: 
+  _cachedSize: {x: 6, y: 6}
 --- !u!1 &434442845
 GameObject:
   m_ObjectHideFlags: 0

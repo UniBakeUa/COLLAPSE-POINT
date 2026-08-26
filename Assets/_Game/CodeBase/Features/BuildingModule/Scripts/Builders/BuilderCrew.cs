@@ -3,6 +3,7 @@ using System.Threading;
 using _Game.CodeBase.Features.BuildingModule.Scripts.Rooms;
 using _Game.CodeBase.Features.BuildingModule.Scripts.Supports;
 using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 namespace _Game.CodeBase.Features.BuildingModule.Scripts
 {
@@ -13,6 +14,7 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
 
         private CancellationTokenSource _cts;
 
+        // Повертаємо Room назад, оскільки бригади призначаються тільки туди
         public Room AssignedRoom { get; private set; }
         public bool IsWorking { get; private set; }
 
@@ -45,10 +47,14 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
             {
                 await UniTask.Delay(TimeSpan.FromSeconds(_buildIntervalSeconds), cancellationToken: token)
                     .SuppressCancellationThrow();
-
+                
                 if (token.IsCancellationRequested) break;
 
-                _supportGenerator.SpawnRandomSupport(AssignedRoom, null);
+                // Передаємо генератору WeightReceiver кімнати, щоб він будував опори від неї
+                if (AssignedRoom != null && AssignedRoom.WeightReceiver != null)
+                {
+                    _supportGenerator.SpawnRandomSupport(AssignedRoom.WeightReceiver, null);
+                }
             }
         }
 

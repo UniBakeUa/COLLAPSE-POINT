@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using _Game.CodeBase.Features.BuildingModule.Scripts.Data;
-using _Game.CodeBase.Features.BuildingModule.Scripts.Rooms;
+using _Game.CodeBase.Features.BuildingModule.Scripts.RoomsAndObjects;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -13,14 +13,15 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
         private readonly ISupportFactory _factory;
         private readonly LayerMask _roomsLayerMask;
 
-        private readonly Dictionary<int, int> _roomSupportCounters = new();
+        private readonly Dictionary<int, int> _receiverSupportCounters = new();
         private readonly Dictionary<int, SupportData> _activeSupports = new();
         private readonly Dictionary<int, Support> _activeInstances = new();
+        private readonly List<Vector2> _usedStartPoints = new();
 
         private readonly RoomSpawner _roomSpawner;
-        
+
         private static readonly RaycastHit2D[] _hitsBuffer = new RaycastHit2D[16];
-        
+
         public SupportsGenerator(SupportsConfig config, ISupportFactory factory, LayerMask roomsLayerMask, RoomSpawner roomSpawner)
         {
             _config = config;
@@ -29,43 +30,44 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
             _roomSpawner = roomSpawner;
         }
 
-        public void SpawnRandomSupport(Room room, bool? horizontal = null)
+        public void SpawnRandomSupport(WeightReceiver receiver, bool? horizontal = null)
         {
             bool isHorizontal = horizontal ?? Random.value > 0.5f;
-            PlaceSupport(room, isHorizontal);
+            PlaceSupport(receiver, isHorizontal);
         }
 
-        public void PlaceSupport(Room room, bool horizontal)
+        public void PlaceSupport(WeightReceiver receiver, bool horizontal)
         {
             int startPointFailStreak = 0;
 
             for (int attempt = 0; attempt < 500; attempt++)
             {
-                if (room == null)
+                if (receiver == null)
                     break;
-                
-                Transform parentRoot = room.transform;
+
+                Transform parentRoot = receiver.Transform;
                 int generation = 0;
                 bool isFromSupport;
                 float parentAngle = 0f;
+                int parentId = -1;
 
-                // Зменшили шанс рости з іншої підпірки, щоб не створювати густі "кущі" в одній точці
-                bool wantFromSupport = room.Data.AttachedSupportIds.Count > 0 && Random.value < 0.2f;
+                bool wantFromSupport = receiver.Data.AttachedSupportIds.Count > 0 && Random.value < 0.2f;
 
                 Vector2 start = wantFromSupport
-                    ? TryGetPointFromExistingSupport(room, out parentRoot, out parentAngle, out generation)
+                    ? TryGetPointFromExistingSupport(receiver, out parentRoot, out parentAngle, out generation, out parentId)
                     : Vector2.zero;
 
                 isFromSupport = start != Vector2.zero;
 
                 if (!isFromSupport)
                 {
-                    start = GetRandomPointOnRoom(room);
-                    parentRoot = room.transform;
+                    start = GetRandomPointOnReceiver(receiver);
+                    parentRoot = receiver.Transform;
                     generation = 0;
+                    parentId = -1;
                 }
 
-                if (start == Vector2.zero)
+                if (start == Vector2.zero || IsTooCloseToExistingStart(start))
                 {
                     startPointFailStreak++;
                     if (startPointFailStreak > 20) return;
@@ -78,7 +80,9 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
                     ? (Random.value > 0.5f
                         ? -90 - Random.Range(_config.minHorizontalAngle, _config.maxHorizontalAngle)
                         : -90 + Random.Range(_config.minHorizontalAngle, _config.maxHorizontalAngle))
-                    : -90 + Random.Range(_config.minVerticalAngle, _config.maxVerticalAngle);
+                    : (Random.value > 0.5f
+                        ? -90 - Random.Range(_config.minVerticalAngle, _config.maxVerticalAngle)
+                        : -90 + Random.Range(_config.minVerticalAngle, _config.maxVerticalAngle));
 
                 if (isFromSupport)
                 {
@@ -92,10 +96,10 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
 
                 Vector2 dir = new Vector2(Mathf.Cos(newAngle * Mathf.Deg2Rad), Mathf.Sin(newAngle * Mathf.Deg2Rad));
 
-                float lengthBiasT = Mathf.Clamp01(room.Data.AttachedSupportIds.Count / (float)_config.longSupportRoomCountThreshold);
-                float preferredMaxLength = Mathf.Lerp(_config.maxLength, _config.minLength, lengthBiasT);
+                float progressT = Mathf.Clamp01(receiver.Data.AttachedSupportIds.Count / (float)_config.longSupportRoomCountThreshold);
+                float preferredMaxLength = Mathf.Lerp(_config.maxLength, _config.minLength, progressT);
                 float currentMaxDist = horizontal ? (preferredMaxLength / 3f) : preferredMaxLength;
-                
+
                 Vector2 actualEnd = PerformPhysicsRaycast(start, dir, currentMaxDist, parentRoot);
 
                 if (actualEnd == Vector2.zero) continue;
@@ -104,20 +108,24 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
                 if (currentLength < _config.minLength ||
                     !ValidateConstraints(start, actualEnd, currentMaxDist, isFromSupport, horizontal))
                     continue;
-                
-                float lengthProgress = Mathf.InverseLerp(_config.minLength, _config.maxLength, currentLength);
-                float currentThickness = Mathf.Lerp(_config.minThickness, _config.maxThickness, lengthProgress);
 
-                int localId = GetNextLocalId(room.Data.Id);
-                int compositeId = (room.Data.Id * 1000) + localId;
-                
-                var finalData = new SupportData(compositeId, start, actualEnd, room.Data.Id, generation, currentThickness);
+                float currentThickness = Mathf.Lerp(_config.maxThickness, _config.minThickness, progressT);
+
+                if (isFromSupport && _activeSupports.TryGetValue(parentId, out var parentSupportData))
+                    currentThickness = Mathf.Min(currentThickness, parentSupportData.Thickness);
+
+                int localId = GetNextLocalId(receiver.Data.Id);
+                int compositeId = (receiver.Data.Id * 1000) + localId;
+
+                var finalData = new SupportData(compositeId, start, actualEnd, receiver.Data.Id, generation, currentThickness);
                 var material = _config.GetLevel(0);
                 var instance = _factory.Create(finalData, material);
 
                 _activeSupports[compositeId] = finalData;
                 _activeInstances[compositeId] = instance;
-                room.Data.AttachedSupportIds.Add(compositeId);
+                receiver.Data.AttachedSupportIds.Add(compositeId);
+
+                AddUsedStartPoint(start);
                 return;
             }
         }
@@ -141,10 +149,11 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
                 return hit.point;
             }
 
-            var firstRoom = _roomSpawner.FirstRoom;
-            if (firstRoom == null) return Vector2.zero;
+            // Виправляємо виклик на FirstReceiver замість FirstRoom
+            var firstReceiver = _roomSpawner.FirstReceiver;
+            if (firstReceiver == null) return Vector2.zero;
 
-            float groundY = firstRoom.transform.position.y - firstRoom.Data.Size.y / 2f - _config.maxLength;
+            float groundY = firstReceiver.Transform.position.y - firstReceiver.Data.Size.y / 2f - _config.maxLength;
             if (dir.y < 0)
             {
                 float t = (groundY - start.y) / dir.y;
@@ -155,30 +164,31 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
             return Vector2.zero;
         }
 
-        private Vector2 TryGetPointFromExistingSupport(Room room, out Transform parentRoot, out float parentAngle, out int nextGeneration)
+        private Vector2 TryGetPointFromExistingSupport(WeightReceiver receiver, out Transform parentRoot, out float parentAngle, out int nextGeneration, out int parentId)
         {
-            parentRoot = room.transform;
+            parentRoot = receiver.Transform;
             parentAngle = 0f;
             nextGeneration = 0;
+            parentId = -1;
 
-            if (room.Data.AttachedSupportIds.Count == 0) return Vector2.zero;
+            if (receiver.Data.AttachedSupportIds.Count == 0) return Vector2.zero;
 
-            int randomIndex = Random.Range(0, room.Data.AttachedSupportIds.Count);
-            int parentId = room.Data.AttachedSupportIds[randomIndex];
+            int randomIndex = Random.Range(0, receiver.Data.AttachedSupportIds.Count);
+            int candidateId = receiver.Data.AttachedSupportIds[randomIndex];
 
-            if (!_activeSupports.TryGetValue(parentId, out var parentData)) return Vector2.zero;
+            if (!_activeSupports.TryGetValue(candidateId, out var parentData)) return Vector2.zero;
 
-            float spawnChance = Mathf.Pow(0.4f, parentData.Generation); // Швидше затухання гілкування
+            float spawnChance = Mathf.Pow(0.4f, parentData.Generation);
             if (Random.value > spawnChance) return Vector2.zero;
 
+            parentId = candidateId;
             nextGeneration = parentData.Generation + 1;
             Vector2 parentDir = parentData.End - parentData.Start;
             parentAngle = Mathf.Atan2(parentDir.y, parentDir.x) * Mathf.Rad2Deg;
 
-            if (_activeInstances.TryGetValue(parentId, out var parentInstance))
+            if (_activeInstances.TryGetValue(candidateId, out var parentInstance))
                 parentRoot = parentInstance.transform;
 
-            // Вибираємо випадкову точку на підпірці, але трохи відступивши від країв
             return parentData.GetPointOnLine(Random.Range(0.3f, 0.8f));
         }
 
@@ -188,7 +198,7 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
             float dx = Mathf.Abs(start.x - end.x);
             float dy = Mathf.Abs(start.y - end.y);
 
-            if (dy < 0.01f) return isHorizontalMode; 
+            if (dy < 0.01f) return isHorizontalMode;
 
             if (isHorizontalMode)
                 return length <= currentMaxDist;
@@ -205,19 +215,19 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
             return currentDrift <= dynamicMaxDrift;
         }
 
-        private Vector2 GetRandomPointOnRoom(Room room)
+        private Vector2 GetRandomPointOnReceiver(WeightReceiver receiver)
         {
-            var pos = room.transform.position;
-            var size = room.Data.Size;
+            var pos = receiver.Transform.position;
+            var size = receiver.Data.Size;
 
             float minX = pos.x - size.x / 2f;
             float maxX = pos.x + size.x / 2f;
             float y = pos.y - size.y / 2f;
 
-            float safeMin = minX + 0.4f; // Збільшили відступи від країв кімнати
+            float safeMin = minX + 0.4f;
             float safeMax = maxX - 0.4f;
 
-            var ownCollider = room.GetComponent<Collider2D>();
+            var ownCollider = receiver.BoxCollider;
 
             for (int i = 0; i < 30; i++)
             {
@@ -227,27 +237,26 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
                 var hit = Physics2D.OverlapPoint(checkPoint, _roomsLayerMask);
 
                 if (hit == null || hit == ownCollider)
-                {
-                    bool tooClose = false;
-                    foreach (var id in room.Data.AttachedSupportIds)
-                    {
-                        if (_activeSupports.TryGetValue(id, out var data))
-                        {
-                            // Перевіряємо відстань не тільки по X, а по сукупній дистанції до інших точок стартів на цій кімнаті,
-                            // щоб дошки не ліпишлись в один міліметр одна до одної
-                            if (Mathf.Abs(data.Start.x - testX) < Mathf.Max(0.5f, _config.supportEdgeMargin))
-                            {
-                                tooClose = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!tooClose) return new Vector2(testX, y);
-                }
+                    return new Vector2(testX, y);
             }
 
             return Vector2.zero;
+        }
+
+        private bool IsTooCloseToExistingStart(Vector2 point)
+        {
+            float minDistance = Mathf.Max(0.5f, _config.supportEdgeMargin);
+            for (int i = 0; i < _usedStartPoints.Count; i++)
+            {
+                if (Vector2.Distance(_usedStartPoints[i], point) < minDistance)
+                    return true;
+            }
+            return false;
+        }
+
+        private void AddUsedStartPoint(Vector2 point)
+        {
+            _usedStartPoints.Add(point);
         }
 
         public void RemoveSupport(int id)
@@ -261,10 +270,10 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
             }
         }
 
-        private int GetNextLocalId(int roomId)
+        private int GetNextLocalId(int receiverId)
         {
-            if (!_roomSupportCounters.ContainsKey(roomId)) _roomSupportCounters[roomId] = 1;
-            return _roomSupportCounters[roomId]++;
+            if (!_receiverSupportCounters.ContainsKey(receiverId)) _receiverSupportCounters[receiverId] = 1;
+            return _receiverSupportCounters[receiverId]++;
         }
 
         public void ClearAll()
@@ -274,7 +283,8 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
 
             _activeSupports.Clear();
             _activeInstances.Clear();
-            _roomSupportCounters.Clear();
+            _receiverSupportCounters.Clear();
+            _usedStartPoints.Clear();
         }
 
         public void Dispose() => ClearAll();

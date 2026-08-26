@@ -13,7 +13,15 @@ MonoBehaviour:
   m_Name: RoomPoolConfig
   m_EditorClassIdentifier: Unibake.Features::_Game.CodeBase.Features.BuildingModule.Scripts.Rooms.RoomPoolConfig
   _roomPrefabs:
-  - {fileID: 2611745770151683822, guid: f643b86b48014564bb8f6882aba6fb13, type: 3}
   - {fileID: 2611745770151683822, guid: 0c0907fdb6e0d114e9ce2b30848874f6, type: 3}
   - {fileID: 2611745770151683822, guid: 9678a08aee880454281dcaaddba7e312, type: 3}
   - {fileID: 2611745770151683822, guid: d14d471dbb9739f4baaee6010b19df94, type: 3}
+  _sideWeights:
+  - Side: 0
+    Weight: 70
+  - Side: 2
+    Weight: 55
+  - Side: 3
+    Weight: 55
+  - Side: 1
+    Weight: 20

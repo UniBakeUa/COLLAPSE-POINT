@@ -21,15 +21,15 @@ MonoBehaviour:
   maskToCollide:
     serializedVersion: 2
     m_Bits: 192
-  minLength: 0.5
+  minLength: 1
   maxLength: 15
   minAngleDifference: 15
-  minHorizontalAngle: 10
-  maxHorizontalAngle: 35
+  minHorizontalAngle: 20
+  maxHorizontalAngle: 45
   minVerticalAngle: 2
   maxVerticalAngle: 15
-  minThickness: 0.05
-  maxThickness: 0.4
+  minThickness: 0.02
+  maxThickness: 0.2
   materialLevels:
   - name: 1
     maxLoad: 100

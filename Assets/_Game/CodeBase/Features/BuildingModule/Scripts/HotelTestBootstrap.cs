@@ -30,7 +30,7 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
             if (breakable != null)
                 breakable.SetBreakable(false);
 
-            for (int i = 0; i < 50; i++)
+            for (int i = 0; i < 100; i++)
             {
                 var prefab = _roomPoolConfig.GetRandom();
                 var room = _roomSpawner.SpawnRoom(prefab, Random.Range(1f, 10f));
