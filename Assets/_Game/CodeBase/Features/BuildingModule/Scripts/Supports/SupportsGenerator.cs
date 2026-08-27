@@ -18,11 +18,15 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
         private readonly Dictionary<int, Support> _activeInstances = new();
         private readonly List<Vector2> _usedStartPoints = new();
 
+        private readonly Dictionary<int, int> _maxSupportsForReceiver = new();
+        private readonly Dictionary<int, int> _supportMaterialLevel = new();
+
         private readonly RoomSpawner _roomSpawner;
 
         private static readonly RaycastHit2D[] _hitsBuffer = new RaycastHit2D[16];
 
-        public SupportsGenerator(SupportsConfig config, ISupportFactory factory, LayerMask roomsLayerMask, RoomSpawner roomSpawner)
+        public SupportsGenerator(SupportsConfig config, ISupportFactory factory, LayerMask roomsLayerMask,
+            RoomSpawner roomSpawner)
         {
             _config = config;
             _factory = factory;
@@ -38,6 +42,15 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
 
         public void PlaceSupport(WeightReceiver receiver, bool horizontal)
         {
+            if (receiver == null) return;
+            
+            if (_maxSupportsForReceiver.TryGetValue(receiver.Data.Id, out int maxCount) &&
+                receiver.Data.AttachedSupportIds.Count >= maxCount)
+            {
+                UpgradeRandomSupportMaterial(receiver);
+                return;
+            }
+            
             int startPointFailStreak = 0;
 
             for (int attempt = 0; attempt < 500; attempt++)
@@ -54,7 +67,8 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
                 bool wantFromSupport = receiver.Data.AttachedSupportIds.Count > 0 && Random.value < 0.2f;
 
                 Vector2 start = wantFromSupport
-                    ? TryGetPointFromExistingSupport(receiver, out parentRoot, out parentAngle, out generation, out parentId)
+                    ? TryGetPointFromExistingSupport(receiver, out parentRoot, out parentAngle, out generation,
+                        out parentId)
                     : Vector2.zero;
 
                 isFromSupport = start != Vector2.zero;
@@ -70,19 +84,22 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
                 if (start == Vector2.zero || IsTooCloseToExistingStart(start))
                 {
                     startPointFailStreak++;
-                    if (startPointFailStreak > 20) return;
+                    if (startPointFailStreak > 20)
+                    {
+                        MarkReceiverAtCapacity(receiver);
+                        return;
+                    }
                     continue;
                 }
 
                 startPointFailStreak = 0;
 
+                // НОВЕ: генеруємо кут повністю в межах діапазону (не тільки два краї), максимально рандомно
                 float newAngle = horizontal
-                    ? (Random.value > 0.5f
-                        ? -90 - Random.Range(_config.minHorizontalAngle, _config.maxHorizontalAngle)
-                        : -90 + Random.Range(_config.minHorizontalAngle, _config.maxHorizontalAngle))
-                    : (Random.value > 0.5f
-                        ? -90 - Random.Range(_config.minVerticalAngle, _config.maxVerticalAngle)
-                        : -90 + Random.Range(_config.minVerticalAngle, _config.maxVerticalAngle));
+                    ? (Random.value > 0.5f ? -1f : 1f) *
+                    Random.Range(_config.minHorizontalAngle, _config.maxHorizontalAngle) - 90f
+                    : (Random.value > 0.5f ? -1f : 1f) *
+                    Random.Range(_config.minVerticalAngle, _config.maxVerticalAngle) - 90f;
 
                 if (isFromSupport)
                 {
@@ -94,9 +111,14 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
                     }
                 }
 
+                // НОВЕ: перевіряємо кут відносно ВСІХ вже прикріплених опор цього рецептора, не тільки батьківської
+                if (!IsAngleDistinctEnough(receiver, newAngle))
+                    continue;
+
                 Vector2 dir = new Vector2(Mathf.Cos(newAngle * Mathf.Deg2Rad), Mathf.Sin(newAngle * Mathf.Deg2Rad));
 
-                float progressT = Mathf.Clamp01(receiver.Data.AttachedSupportIds.Count / (float)_config.longSupportRoomCountThreshold);
+                float progressT = Mathf.Clamp01(receiver.Data.AttachedSupportIds.Count /
+                                                (float)_config.longSupportRoomCountThreshold);
                 float preferredMaxLength = Mathf.Lerp(_config.maxLength, _config.minLength, progressT);
                 float currentMaxDist = horizontal ? (preferredMaxLength / 3f) : preferredMaxLength;
 
@@ -117,17 +139,76 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
                 int localId = GetNextLocalId(receiver.Data.Id);
                 int compositeId = (receiver.Data.Id * 1000) + localId;
 
-                var finalData = new SupportData(compositeId, start, actualEnd, receiver.Data.Id, generation, currentThickness);
-                var material = _config.GetLevel(0);
+                var finalData = new SupportData(compositeId, start, actualEnd, receiver.Data.Id, generation,
+                    currentThickness);
+
+                int levelIndex = Mathf.RoundToInt(progressT * (_config.materialLevels.Count - 1));
+                var material = _config.GetLevel(levelIndex);
                 var instance = _factory.Create(finalData, material);
 
                 _activeSupports[compositeId] = finalData;
                 _activeInstances[compositeId] = instance;
+                _supportMaterialLevel[compositeId] = levelIndex; // НОВЕ
                 receiver.Data.AttachedSupportIds.Add(compositeId);
 
                 AddUsedStartPoint(start);
                 return;
             }
+
+            MarkReceiverAtCapacity(receiver);
+            UpgradeRandomSupportMaterial(receiver);
+        }
+
+        private bool IsAngleDistinctEnough(WeightReceiver receiver, float newAngle)
+        {
+            foreach (var id in receiver.Data.AttachedSupportIds)
+            {
+                if (!_activeSupports.TryGetValue(id, out var data)) continue;
+
+                Vector2 dir = data.End - data.Start;
+                float existingAngle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+
+                if (Mathf.Abs(Mathf.DeltaAngle(newAngle, existingAngle)) < _config.minAngleDifference)
+                    return false;
+            }
+
+            return true;
+        }
+
+        private void MarkReceiverAtCapacity(WeightReceiver receiver)
+        {
+            _maxSupportsForReceiver[receiver.Data.Id] = receiver.Data.AttachedSupportIds.Count;
+        }
+
+        private void UpgradeRandomSupportMaterial(WeightReceiver receiver)
+        {
+            var ids = receiver.Data.AttachedSupportIds;
+            if (ids.Count == 0) return;
+
+            int targetId = -1;
+            int lowestLevel = int.MaxValue;
+
+            foreach (var id in ids)
+            {
+                int level = _supportMaterialLevel.TryGetValue(id, out var l) ? l : 0;
+                if (level >= _config.materialLevels.Count - 1) continue;
+
+                if (level < lowestLevel)
+                {
+                    lowestLevel = level;
+                    targetId = id;
+                }
+            }
+
+            if (targetId == -1) return;
+
+            int newLevel = lowestLevel + 1;
+            _supportMaterialLevel[targetId] = newLevel;
+
+            var newMaterial = _config.GetLevel(newLevel);
+
+            if (_activeInstances.TryGetValue(targetId, out var instance))
+                instance.UpgradeMaterial(newMaterial);
         }
 
         private Vector2 PerformPhysicsRaycast(Vector2 start, Vector2 dir, float currentMaxDist, Transform ignoreRoot)
@@ -149,7 +230,6 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
                 return hit.point;
             }
 
-            // Виправляємо виклик на FirstReceiver замість FirstRoom
             var firstReceiver = _roomSpawner.FirstReceiver;
             if (firstReceiver == null) return Vector2.zero;
 
@@ -158,13 +238,24 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
             {
                 float t = (groundY - start.y) / dir.y;
                 if (t > 0 && t < dynamicMaxDist)
-                    return start + dir * t;
+                {
+                    Vector2 fallbackPoint = start + dir * t;
+
+                    // НОВЕ: перевіряємо, що обчислена точка дійсно порожня,
+                    // а не всередині якоїсь чужої кімнати
+                    var overlap = Physics2D.OverlapPoint(fallbackPoint, _config.maskToCollide);
+                    if (overlap != null && (ignoreRoot == null || !overlap.transform.IsChildOf(ignoreRoot)))
+                        return Vector2.zero; // там щось є — не ставимо опору "в стіну"/кімнату
+
+                    return fallbackPoint;
+                }
             }
 
             return Vector2.zero;
         }
 
-        private Vector2 TryGetPointFromExistingSupport(WeightReceiver receiver, out Transform parentRoot, out float parentAngle, out int nextGeneration, out int parentId)
+        private Vector2 TryGetPointFromExistingSupport(WeightReceiver receiver, out Transform parentRoot,
+            out float parentAngle, out int nextGeneration, out int parentId)
         {
             parentRoot = receiver.Transform;
             parentAngle = 0f;
@@ -192,7 +283,8 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
             return parentData.GetPointOnLine(Random.Range(0.3f, 0.8f));
         }
 
-        private bool ValidateConstraints(Vector2 start, Vector2 end, float currentMaxDist, bool isFromSupport, bool isHorizontalMode)
+        private bool ValidateConstraints(Vector2 start, Vector2 end, float currentMaxDist, bool isFromSupport,
+            bool isHorizontalMode)
         {
             float length = Vector2.Distance(start, end);
             float dx = Mathf.Abs(start.x - end.x);
@@ -217,30 +309,51 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
 
         private Vector2 GetRandomPointOnReceiver(WeightReceiver receiver)
         {
-            var pos = receiver.Transform.position;
-            var size = receiver.Data.Size;
+            var box = receiver.BoxCollider;
+            if (box == null) return Vector2.zero;
 
-            float minX = pos.x - size.x / 2f;
-            float maxX = pos.x + size.x / 2f;
-            float y = pos.y - size.y / 2f;
+            Bounds bounds = box.bounds;
+
+            float minX = bounds.min.x;
+            float maxX = bounds.max.x;
+            float y = bounds.min.y;
 
             float safeMin = minX + 0.4f;
             float safeMax = maxX - 0.4f;
 
-            var ownCollider = receiver.BoxCollider;
+            if (safeMin >= safeMax) return Vector2.zero;
 
             for (int i = 0; i < 30; i++)
             {
                 float testX = Random.Range(safeMin, safeMax);
+                Vector2 point = new Vector2(testX, y);
+
+                Vector2 insideCheck = new Vector2(testX, y + 0.05f);
+                var insideHit = Physics2D.OverlapPoint(insideCheck, _roomsLayerMask);
+                if (insideHit != box) continue;
+
                 Vector2 checkPoint = new Vector2(testX, y - 0.05f);
+                var belowHit = Physics2D.OverlapPoint(checkPoint, _roomsLayerMask);
+                if (belowHit != null && belowHit != box) continue;
 
-                var hit = Physics2D.OverlapPoint(checkPoint, _roomsLayerMask);
+                // НОВЕ: перевіряємо, чи немає поруч чужого колайдера (кут/стик кімнат)
+                if (IsTooCloseToOtherRoom(point, box)) continue;
 
-                if (hit == null || hit == ownCollider)
-                    return new Vector2(testX, y);
+                return point;
             }
 
             return Vector2.zero;
+        }
+
+        private bool IsTooCloseToOtherRoom(Vector2 point, Collider2D ownCollider)
+        {
+            var hits = Physics2D.OverlapCircleAll(point, _config.supportEdgeMargin, _roomsLayerMask);
+            foreach (var hit in hits)
+            {
+                if (hit != ownCollider)
+                    return true; // поруч є чужа кімната — це кут/стик, точку не використовуємо
+            }
+            return false;
         }
 
         private bool IsTooCloseToExistingStart(Vector2 point)
@@ -251,6 +364,7 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
                 if (Vector2.Distance(_usedStartPoints[i], point) < minDistance)
                     return true;
             }
+
             return false;
         }
 
@@ -262,12 +376,16 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
         public void RemoveSupport(int id)
         {
             _activeSupports.Remove(id);
+            _supportMaterialLevel.Remove(id);
 
             if (_activeInstances.TryGetValue(id, out var instance))
             {
                 instance.Dispose();
                 _activeInstances.Remove(id);
             }
+
+            int receiverId = id / 1000;
+            _maxSupportsForReceiver.Remove(receiverId);
         }
 
         private int GetNextLocalId(int receiverId)
@@ -285,6 +403,8 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
             _activeInstances.Clear();
             _receiverSupportCounters.Clear();
             _usedStartPoints.Clear();
+            _maxSupportsForReceiver.Clear();
+            _supportMaterialLevel.Clear();
         }
 
         public void Dispose() => ClearAll();

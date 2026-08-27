@@ -40,7 +40,11 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
                 (Vector2)transform.InverseTransformPoint(_endPoint)
             };
         }
-
+        public void UpgradeMaterial(SupportMaterialLevel material)
+        {
+            _lineRenderer.startColor = material.visualColor;
+            _lineRenderer.endColor = material.visualColor;
+        }
         public Vector3 GetAnchorPoint() => Vector3.Lerp(_startPoint, _endPoint, 0.5f);
 
         public void OnSpawned(IMemoryPool pool) => _pool = pool;
