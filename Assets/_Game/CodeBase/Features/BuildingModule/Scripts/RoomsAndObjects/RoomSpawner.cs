@@ -66,7 +66,23 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
                 }
             }
         }
+        public Bounds GetTotalBounds()
+        {
+            if (_spawnedRooms.Count == 0)
+                return new Bounds(Vector3.zero, Vector3.zero);
 
+            var firstReceiver = _spawnedRooms[0].WeightReceiver;
+            Bounds totalBounds = new Bounds(firstReceiver.Transform.position, firstReceiver.Data.Size);
+
+            for (int i = 1; i < _spawnedRooms.Count; i++)
+            {
+                var receiver = _spawnedRooms[i].WeightReceiver;
+                var roomBounds = new Bounds(receiver.Transform.position, receiver.Data.Size);
+                totalBounds.Encapsulate(roomBounds);
+            }
+
+            return totalBounds;
+        }
         public Room SpawnRoom(Room roomPrefab, float weight, Vector3? fixedPosition = null)
         {
             var roomSize = roomPrefab.WeightReceiver.Data.Size;

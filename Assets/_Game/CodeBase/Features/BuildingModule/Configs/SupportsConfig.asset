@@ -17,7 +17,7 @@ MonoBehaviour:
   longSupportRoomCountThreshold: 5
   maxHorizontalLengthMult: 1.5
   maxVerticalDriftRatio: 0.3
-  supportEdgeMargin: 0.3
+  supportEdgeMargin: 0.1
   maskToCollide:
     serializedVersion: 2
     m_Bits: 192

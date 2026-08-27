@@ -1,3 +1,4 @@
+using _Game.CodeBase.Features.Behaivors;
 using _Game.CodeBase.Features.BuildingModule.Scripts.Rooms;
 using UnityEngine;
 using Zenject;
@@ -10,15 +11,17 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
         private BuilderCrewManager _crewManager;
         private RoomPoolConfig _roomPoolConfig;
         private HotelPoolConfig _hotelPoolConfig;
+        private CameraRoomFramer _cameraRoomFramer;
 
         [Inject]
         private void Construct(RoomSpawner roomSpawner, BuilderCrewManager crewManager,
-            RoomPoolConfig roomPoolConfig, HotelPoolConfig hotelPoolConfig)
+            RoomPoolConfig roomPoolConfig, HotelPoolConfig hotelPoolConfig, CameraRoomFramer  cameraRoomFramer)
         {
             _roomSpawner = roomSpawner;
             _crewManager = crewManager;
             _roomPoolConfig = roomPoolConfig;
             _hotelPoolConfig = hotelPoolConfig;
+            _cameraRoomFramer =  cameraRoomFramer;
         }
 
         private void Start()
@@ -34,10 +37,11 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
             {
                 var prefab = _roomPoolConfig.GetRandom();
                 var room = _roomSpawner.SpawnRoom(prefab, Random.Range(1f, 10f));
-
+                
                 var crew = _crewManager.HireCrew();
                 _crewManager.AssignCrewToRoom(crew, room);
             }
+            _cameraRoomFramer.FrameBounds(_roomSpawner.GetTotalBounds());
         }
     }
 }
