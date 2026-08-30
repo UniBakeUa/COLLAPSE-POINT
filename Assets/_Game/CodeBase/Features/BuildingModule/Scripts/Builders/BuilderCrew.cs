@@ -3,7 +3,6 @@ using System.Threading;
 using _Game.CodeBase.Features.BuildingModule.Scripts.Rooms;
 using _Game.CodeBase.Features.BuildingModule.Scripts.Supports;
 using Cysharp.Threading.Tasks;
-using UnityEngine;
 
 namespace _Game.CodeBase.Features.BuildingModule.Scripts
 {
@@ -18,7 +17,7 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
         public Room AssignedRoom { get; private set; }
         public bool IsWorking { get; private set; }
 
-        public BuilderCrew(SupportsGenerator supportGenerator, float buildIntervalSeconds = 3f)
+        public BuilderCrew(SupportsGenerator supportGenerator, float buildIntervalSeconds = 0.8f)
         {
             _supportGenerator = supportGenerator;
             _buildIntervalSeconds = buildIntervalSeconds;

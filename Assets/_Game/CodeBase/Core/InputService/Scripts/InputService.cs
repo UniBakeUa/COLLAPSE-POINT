@@ -6,7 +6,7 @@ using Zenject;
 
 namespace _Game.Core.InputSystemModule.Scripts
 {
-    public class InputService : IInputService, IInitializable, IDisposable
+    public class InputService : IInputService, IInitializable, IDisposable, ITickable
     {
         public event Action<Vector2> OnSimpleClick;
         public event Action<Vector2> OnDragStart;
@@ -21,6 +21,9 @@ namespace _Game.Core.InputSystemModule.Scripts
         private bool _isPotentialDrag;
         private bool _isDragging;
         private const float DragThreshold = 10f;
+        
+        private bool _pendingSimpleClick;
+        private Vector2 _pendingClickPosition;
 
         public enum Layout
         {
@@ -32,10 +35,16 @@ namespace _Game.Core.InputSystemModule.Scripts
         {
             GameInput = new InputSystemm_Actions();
             SubscribeEvents();
-
-            SwitchToUI();
         }
+        public void Tick()
+        {
+            if (!_pendingSimpleClick) return;
 
+            _pendingSimpleClick = false;
+
+            if (!IsPointerOverUI()) // тепер це Update — EventSystem вже оновлений
+                OnSimpleClick?.Invoke(_pendingClickPosition);
+        }
         public void Dispose()
         {
             if (GameInput == null) return;
@@ -85,9 +94,10 @@ namespace _Game.Core.InputSystemModule.Scripts
             {
                 OnDragEnd?.Invoke();
             }
-            else if (_isPotentialDrag && !IsPointerOverUI())
+            else if (_isPotentialDrag)
             {
-                OnSimpleClick?.Invoke(_startMousePosition);
+                _pendingSimpleClick = true;
+                _pendingClickPosition = _startMousePosition;
             }
 
             ResetDragState();

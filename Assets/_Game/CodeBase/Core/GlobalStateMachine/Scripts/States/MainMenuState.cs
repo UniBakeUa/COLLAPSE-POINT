@@ -1,11 +1,14 @@
+using _Game.Core.InputSystemModule.Scripts;
 using _Game.Core.SceneLoadingModule.Scripts;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using Zenject;
 
 namespace _Game.Core.GlobalStateMachine.Scripts.States
 {
     public class MainMenuState : GlobalStateBase
     {
+        [Inject] InputService inputService;
         private const string SceneKey = "MainMenu";
         private readonly AddressableSceneLoader _sceneLoader;
 
@@ -17,7 +20,7 @@ namespace _Game.Core.GlobalStateMachine.Scripts.States
         public override void Enter()
         {
             Debug.Log("Entering MainMenu");
-            
+            inputService.SwitchToUI();
             LoadAsync().Forget();
         }
 

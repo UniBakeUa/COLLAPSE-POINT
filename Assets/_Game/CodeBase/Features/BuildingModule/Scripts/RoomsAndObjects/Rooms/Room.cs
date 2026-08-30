@@ -1,4 +1,5 @@
 using _Game.CodeBase.Features.BuildingModule.Scripts.RoomsAndObjects;
+using _Game.CodeBase.Features.BuildingModule.Scripts.Weight;
 using UnityEngine;
 
 namespace _Game.CodeBase.Features.BuildingModule.Scripts.Rooms

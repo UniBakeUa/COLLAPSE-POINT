@@ -1,6 +1,7 @@
+using _Game.CodeBase.Features.BuildingModule.Scripts.RoomsAndObjects;
 using UnityEngine;
 
-namespace _Game.CodeBase.Features.BuildingModule.Scripts.RoomsAndObjects
+namespace _Game.CodeBase.Features.BuildingModule.Scripts.Weight
 {
     [ExecuteAlways]
     [RequireComponent(typeof(BoxCollider2D))]
@@ -9,21 +10,23 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.RoomsAndObjects
     public class WeightReceiver : MonoBehaviour
     {
         private const float SizeGridUnit = 0.5f;
-
-        [SerializeField] private SpriteRenderer _spriteRenderer;
-
+        
         [field: SerializeField] private BoxCollider2D _boxCollider;
         [field: SerializeField] public WeightData Data { get; private set; } = new();
 
+        [SerializeField] private SpriteRenderer _spriteRenderer;
+
         [SerializeField, HideInInspector] private Vector2 _cachedSize = Vector2.one;
-
+        private InfiniteAnchorReceiver _infiniteAnchor;
         public BoxCollider2D BoxCollider => _boxCollider;
-
+        public bool IsInfiniteAnchor => _infiniteAnchor != null;
         public Transform Transform => transform;
 
         private void Awake()
         {
             Data.Position = transform.position;
+            TryGetComponent<InfiniteAnchorReceiver>(out var infiniteAnchor);
+            _infiniteAnchor = infiniteAnchor;
         }
 
         private void UpdateSize()

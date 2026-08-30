@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using _Game.CodeBase.Features.BuildingModule.Scripts.Rooms;
 using _Game.CodeBase.Features.BuildingModule.Scripts.RoomsAndObjects;
+using _Game.CodeBase.Features.BuildingModule.Scripts.Weight;
 using UnityEngine;
 using Zenject;
 using Random = UnityEngine.Random;
@@ -9,7 +10,7 @@ using Random = UnityEngine.Random;
 namespace _Game.CodeBase.Features.BuildingModule.Scripts
 {
     public enum RoomSide { Top, Bottom, Left, Right }
-    
+
     [Serializable]
     public struct SideWeightData
     {
@@ -19,32 +20,34 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
 
     public class RoomSpawner
     {
-        private const float SlideStep = 0.5f;
-
-        private const int MaxSpawnAttempts = 30;
-        private const int FreeSpaceSampleCount = 8;
+        private readonly SignalBus _signalBus;
         private readonly RoomPoolConfig _poolConfig;
-        
+        private readonly DiContainer _container;
+        private readonly LayerMask _supportsLayerMask;
+
+        private float _hotelY;
+        private float _hotelX;
+
         private int _nextRoomId = 1;
 
-        private readonly DiContainer _container;
         private readonly List<Room> _spawnedRooms = new();
-
         private readonly List<WeightReceiver> _weightReceivers = new();
-
         private readonly List<(Room anchorRoom, RoomSide side, float freeScore)> _candidatesBuffer = new();
         private static readonly RoomSide[] _allSides = (RoomSide[])Enum.GetValues(typeof(RoomSide));
-
-        public IReadOnlyList<Room> SpawnedRooms => _spawnedRooms;
-
         public WeightReceiver FirstReceiver => _weightReceivers.Count > 0 ? _weightReceivers[0] : null;
 
         private readonly List<Rect> _roomRects = new();
-
-        public RoomSpawner(DiContainer container, RoomPoolConfig poolConfig)
+        
+        public IReadOnlyList<WeightReceiver> WeightReceivers => _weightReceivers;
+        public IReadOnlyList<Room> SpawnedRooms => _spawnedRooms;
+        
+        public RoomSpawner(DiContainer container, RoomPoolConfig poolConfig, LayerMask supportsLayerMask,
+            SignalBus signalBus)
         {
             _container = container;
             _poolConfig = poolConfig;
+            _supportsLayerMask = supportsLayerMask;
+            _signalBus = signalBus;
             RegisterExistingReceivers();
         }
 
@@ -53,19 +56,16 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
             var existingReceivers = UnityEngine.Object.FindObjectsByType<WeightReceiver>(FindObjectsSortMode.None);
             foreach (var receiver in existingReceivers)
             {
-                if (receiver.GetComponentInParent<Room>() == null)
-                {
-                    if (!_weightReceivers.Contains(receiver))
-                    {
-                        _weightReceivers.Add(receiver);
+                if (receiver.GetComponentInParent<Room>() != null) continue;
+                if (_weightReceivers.Contains(receiver)) continue;
 
-                        var size = receiver.Data.Size;
-                        var pos = receiver.Transform.position;
-                        _roomRects.Add(new Rect(pos.x - size.x / 2f, pos.y - size.y / 2f, size.x, size.y));
-                    }
-                }
+                _weightReceivers.Add(receiver);
+                var size = receiver.Data.Size;
+                var pos = receiver.Transform.position;
+                _roomRects.Add(new Rect(pos.x - size.x / 2f, pos.y - size.y / 2f, size.x, size.y));
             }
         }
+
         public Bounds GetTotalBounds()
         {
             if (_spawnedRooms.Count == 0)
@@ -77,12 +77,12 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
             for (int i = 1; i < _spawnedRooms.Count; i++)
             {
                 var receiver = _spawnedRooms[i].WeightReceiver;
-                var roomBounds = new Bounds(receiver.Transform.position, receiver.Data.Size);
-                totalBounds.Encapsulate(roomBounds);
+                totalBounds.Encapsulate(new Bounds(receiver.Transform.position, receiver.Data.Size));
             }
 
             return totalBounds;
         }
+
         public Room SpawnRoom(Room roomPrefab, float weight, Vector3? fixedPosition = null)
         {
             var roomSize = roomPrefab.WeightReceiver.Data.Size;
@@ -90,6 +90,12 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
             var position = fixedPosition ?? (_spawnedRooms.Count == 0
                 ? Vector3.zero
                 : GetWeightedPosition(roomSize));
+
+            if (_spawnedRooms.Count == 0)
+            {
+                _hotelY = position.y;
+                _hotelX = position.x;
+            }
 
             var room = _container.InstantiatePrefabForComponent<Room>(roomPrefab, position, Quaternion.identity, null);
 
@@ -104,6 +110,8 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
 
             _roomRects.Add(new Rect(position.x - roomSize.x / 2f, position.y - roomSize.y / 2f, roomSize.x, roomSize.y));
 
+            _signalBus.Fire(new RoomSpawnedSignal { Room = room });
+
             return room;
         }
 
@@ -111,14 +119,15 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
         {
             _candidatesBuffer.Clear();
 
-            // Отримуємо налаштування ваг із конфігу (або ставимо дефолтні, якщо конфіг відсутній)
             List<SideWeightData> weightsList = _poolConfig?.SideWeights;
+            float falloffDistance = _poolConfig != null ? _poolConfig.BelowHotelFalloffDistance : 15f;
+            float penaltyNearHotel = _poolConfig != null ? _poolConfig.BelowHotelPenaltyNearHotel : 0.7f;
 
             foreach (var room in _spawnedRooms)
             {
                 var receiver = room.WeightReceiver;
-                
-                foreach (RoomSide side in _allSides) // Перебираємо всі сторони
+
+                foreach (RoomSide side in _allSides)
                 {
                     if (receiver.TryGetComponent<IAttachmentRules>(out var rules) && !rules.CanAttachOnSide(side))
                         continue;
@@ -126,19 +135,26 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
                     float freeScore = EstimateFreeScore(receiver, side, roomSize);
                     if (freeScore <= 0f) continue;
 
-                    // Знаходимо налаштовану вагу для цієї сторони в конфізі
                     float sideWeightMultiplier = 1f;
                     if (weightsList != null)
                     {
                         var found = weightsList.Find(x => x.Side == side);
-                        sideWeightMultiplier = found.Weight / 100f; // Переводимо у коефіцієнт
+                        sideWeightMultiplier = found.Weight / 100f;
                     }
 
-                    // Якщо вага сторони 0%, взагалі пропускаємо її
                     if (sideWeightMultiplier <= 0f) continue;
 
-                    // Множимо реальну вільність місця на відсоток-вагу з конфігу
                     float finalScore = freeScore * sideWeightMultiplier;
+
+                    Vector3 resultPos = GetFlushPosition(receiver, side, roomSize, 0f);
+                    if (resultPos.y < _hotelY)
+                    {
+                        float distanceFromHotel = Mathf.Abs(resultPos.x - _hotelX);
+                        float t = falloffDistance > 0f ? Mathf.Clamp01(distanceFromHotel / falloffDistance) : 1f;
+                        float penaltyMultiplier = Mathf.Lerp(penaltyNearHotel, 1f, t);
+                        finalScore *= penaltyMultiplier;
+                    }
+
                     _candidatesBuffer.Add((room, side, finalScore));
                 }
             }
@@ -149,7 +165,6 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
                 return GetFlushPosition(_spawnedRooms[0].WeightReceiver, RoomSide.Top, roomSize, 0);
             }
 
-            // Класична рулетка (Weighted Random) на основі загальної суми балів
             float totalWeight = 0f;
             for (int i = 0; i < _candidatesBuffer.Count; i++)
                 totalWeight += _candidatesBuffer[i].freeScore;
@@ -168,6 +183,8 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
                 }
             }
 
+            int maxSpawnAttempts = _poolConfig != null ? _poolConfig.MaxSpawnAttempts : 30;
+
             var candidates = GetShuffledFlushCandidates(chosen.anchorRoom.WeightReceiver, chosen.side, roomSize);
             foreach (var offset in candidates)
             {
@@ -176,7 +193,7 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
                     return position;
             }
 
-            for (var attempt = 0; attempt < MaxSpawnAttempts && candidates.Count > 0; attempt++)
+            for (var attempt = 0; attempt < maxSpawnAttempts && candidates.Count > 0; attempt++)
             {
                 var offset = candidates[Random.Range(0, candidates.Count)];
                 var position = GetFlushPosition(chosen.anchorRoom.WeightReceiver, chosen.side, roomSize, offset);
@@ -204,14 +221,6 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
             return (float)freeSamples / candidates.Count;
         }
 
-        /// <summary>
-        /// Кандидати зміщення вздовж ребра прилягання (перпендикулярно напрямку side).
-        /// Якщо розміри анкера і нової кімнати вздовж цієї осі рівні — єдиний
-        /// кандидат offset=0 (ідеальний збіг центрів).
-        /// Якщо розміри різні — рівно ДВА кандидати: прилягання до одного або
-        /// іншого краю анкера (offset = ±(anchorSize-newDimension)/2), і нічого
-        /// між ними — кімната ніколи не "звисає" довільно посередині.
-        /// </summary>
         private List<float> GetShuffledFlushCandidates(WeightReceiver anchor, RoomSide side, Vector2 roomSize)
         {
             var size = anchor.Data.Size;
@@ -242,6 +251,7 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
         {
             var pos = anchor.Transform.position;
             var size = anchor.Data.Size;
+            float slideStep = _poolConfig != null ? _poolConfig.SlideStep : 0.5f;
 
             Vector3 calculatedPosition = side switch
             {
@@ -251,11 +261,9 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
                 _ => new Vector3(pos.x - size.x / 2f - roomSize.x / 2f, pos.y + slideOffset, 0f),
             };
 
-            // Вісь дотику лишається точною (half-size + half-size).
-            // Вісь ковзання округлюємо до SlideStep — тільки як захист від похибок float.
             return side is RoomSide.Top or RoomSide.Bottom
-                ? new Vector3(Mathf.Round(calculatedPosition.x / SlideStep) * SlideStep, calculatedPosition.y, 0f)
-                : new Vector3(calculatedPosition.x, Mathf.Round(calculatedPosition.y / SlideStep) * SlideStep, 0f);
+                ? new Vector3(Mathf.Round(calculatedPosition.x / slideStep) * slideStep, calculatedPosition.y, 0f)
+                : new Vector3(calculatedPosition.x, Mathf.Round(calculatedPosition.y / slideStep) * slideStep, 0f);
         }
 
         private bool Overlaps(Vector3 position, Vector2 size)
@@ -267,7 +275,9 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
                 if (newRect.Overlaps(_roomRects[i]))
                     return true;
             }
-            return false;
+
+            var overlap = Physics2D.OverlapBox(position, size, 0f, _supportsLayerMask);
+            return overlap != null;
         }
     }
 }

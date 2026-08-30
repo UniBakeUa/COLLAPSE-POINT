@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5375987407970960844}
   - component: {fileID: -1253286025169419000}
   - component: {fileID: 4459750469354008297}
+  - component: {fileID: 79062829923854683}
   m_Layer: 6
   m_Name: Hotel
   m_TagString: Untagged
@@ -165,13 +166,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83307397960144b38fade9f166f3b95a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unibake.Features::_Game.CodeBase.Features.BuildingModule.Scripts.RoomsAndObjects.WeightReceiver
-  _spriteRenderer: {fileID: 14782840424884501}
   _boxCollider: {fileID: 5375987407970960844}
   <Data>k__BackingField:
     Id: 0
     Size: {x: 6, y: 6}
     Position: {x: 0, y: 0}
     _baseWeight: 10
-    AdditionalWeight: 0
     AttachedSupportIds: 
+  _spriteRenderer: {fileID: 14782840424884501}
   _cachedSize: {x: 6, y: 6}
+--- !u!114 &79062829923854683
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2436102313630112315}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f321d4c547b4d299070aedcba78472a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unibake.Features::_Game.CodeBase.Features.BuildingModule.Scripts.Weight.InfiniteAnchorReceiver

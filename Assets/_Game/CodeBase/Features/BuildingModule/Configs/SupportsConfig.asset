@@ -32,20 +32,33 @@ MonoBehaviour:
   maxThickness: 0.2
   materialLevels:
   - name: lvl1
-    maxLoad: 100
+    maxLoad: 15
     buildTime: 2
     supportSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
     visualColor: {r: 0.74509805, g: 0.45098042, b: 0.227451, a: 1}
     supportPrefab: {fileID: 868595195219381261, guid: 3269d7e5f0ebfd348bfcb506eb5d716e, type: 3}
   - name: lvl2
-    maxLoad: 150
+    maxLoad: 30
     buildTime: 3
     supportSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
     visualColor: {r: 0.5566038, g: 0.34092754, b: 0.17065683, a: 1}
     supportPrefab: {fileID: 868595195219381261, guid: 3269d7e5f0ebfd348bfcb506eb5d716e, type: 3}
   - name: lvl3
-    maxLoad: 180
+    maxLoad: 60
     buildTime: 5
     supportSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
     visualColor: {r: 0.3584906, g: 0.27212915, b: 0.20461018, a: 1}
     supportPrefab: {fileID: 868595195219381261, guid: 3269d7e5f0ebfd348bfcb506eb5d716e, type: 3}
+  maxPlacementAttempts: 50
+  startPointFailStreakLimit: 20
+  freeSpaceScanSamples: 8
+  freeSegmentPointAttempts: 30
+  raycastOriginOffset: 0.05
+  raycastRadius: 0.02
+  minHitDistance: 0.01
+  insideCheckOffset: 0.05
+  receiverEdgeInset: 0.4
+  branchProbability: 0.2
+  branchSpawnChanceBase: 0.4
+  branchPointRangeMin: 0.3
+  branchPointRangeMax: 0.8
