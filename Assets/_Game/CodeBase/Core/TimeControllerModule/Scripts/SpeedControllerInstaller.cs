@@ -13,6 +13,7 @@ namespace _Game.CodeBase.Core.TimeControllerModule.Scripts
             Container.DeclareSignal<SpeedChangedSignal>();
             
             Container.BindInterfacesAndSelfTo<SpeedController>().AsSingle().WithArguments(speedConfig);
+            Container.BindInterfacesAndSelfTo<SpeedInputHandler>().AsSingle();
         }
     }
 }

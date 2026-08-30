@@ -342,7 +342,44 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
 
             return parentData.GetPointOnLine(Random.Range(_config.branchPointRangeMin, _config.branchPointRangeMax));
         }
+        public bool TryGetNextUpgradeLevel(WeightReceiver receiver, out int currentLevel)
+        {
+            currentLevel = -1;
 
+            var ids = receiver.Data.AttachedSupportIds;
+            if (ids.Count == 0) return false;
+
+            int lowestLevel = int.MaxValue;
+            bool found = false;
+
+            foreach (var id in ids)
+            {
+                int level = _supportMaterialLevel.TryGetValue(id, out var l) ? l : 0;
+                if (level >= _config.materialLevels.Count - 1) continue;
+
+                if (level < lowestLevel)
+                {
+                    lowestLevel = level;
+                    found = true;
+                }
+            }
+
+            if (!found) return false;
+
+            currentLevel = lowestLevel;
+            return true;
+        }
+        
+        public float GetUpgradeBuildTime(int currentLevel)
+        {
+            int targetLevel = currentLevel + 1;
+            return _config.GetLevel(targetLevel).buildTime;
+        }
+        
+        public float GetNewSupportBuildTime()
+        {
+            return _config.GetLevel(0).buildTime;
+        }
         private bool ValidateConstraints(Vector2 start, Vector2 end, float currentMaxDist, bool isFromSupport,
             bool isHorizontalMode)
         {

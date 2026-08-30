@@ -9,7 +9,6 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
 {
     public class HotelTestBootstrap2 : MonoBehaviour
     {
-        [SerializeField] private int _roomsToSpawn = 500;
         [SerializeField] private float _delayBetweenSpawns = 0.2f;
 
         private RoomSpawner _roomSpawner;
@@ -48,7 +47,7 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
 
             _cameraRoomFramer.SnapToBounds(_roomSpawner.GetTotalBounds());
 
-            for (int i = 0; i < _roomsToSpawn; i++)
+            while (true)
             {
                 if (token.IsCancellationRequested) return;
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using _Game.CodeBase.Core.TimeControllerModule.Scripts;
 using _Game.CodeBase.Features.BuildingModule.Scripts.Rooms;
 using _Game.CodeBase.Features.BuildingModule.Scripts.RoomsAndObjects;
 using _Game.CodeBase.Features.BuildingModule.Scripts.Weight;
@@ -40,6 +41,7 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
         
         public IReadOnlyList<WeightReceiver> WeightReceivers => _weightReceivers;
         public IReadOnlyList<Room> SpawnedRooms => _spawnedRooms;
+        
         
         public RoomSpawner(DiContainer container, RoomPoolConfig poolConfig, LayerMask supportsLayerMask,
             SignalBus signalBus)

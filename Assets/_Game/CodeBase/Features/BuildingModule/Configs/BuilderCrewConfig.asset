@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd1415a4bb8f45748d4e2b2a1ef5f736, type: 3}
+  m_Name: BuilderCrewConfig
+  m_EditorClassIdentifier: Unibake.Features::_Game.CodeBase.Features.BuildingModule.Scripts.BuilderCrewConfig
+  CrewLevels:
+  - Level: 0
+    BuildTime: 3
+  - Level: 1
+    BuildTime: 2
+  - Level: 2
+    BuildTime: 1

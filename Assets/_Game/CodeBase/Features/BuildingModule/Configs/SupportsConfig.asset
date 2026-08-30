@@ -33,7 +33,7 @@ MonoBehaviour:
   materialLevels:
   - name: lvl1
     maxLoad: 15
-    buildTime: 2
+    buildTime: 1
     supportSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
     visualColor: {r: 0.74509805, g: 0.45098042, b: 0.227451, a: 1}
     supportPrefab: {fileID: 868595195219381261, guid: 3269d7e5f0ebfd348bfcb506eb5d716e, type: 3}

@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0681e4dda8b4ca58f25621a0e712036, type: 3}
   m_Name: SpeedConfig
   m_EditorClassIdentifier: Unibake.Core::_Game.CodeBase.Core.TimeControllerModule.Scripts.SpeedConfig
-  speedCollection: 010000000200000003000000
+  speedCollection: 010000000a00000064000000

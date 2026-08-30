@@ -12,14 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6e02d7bd5dc049f6869fbc2fa60750d0, type: 3}
   m_Name: HotelInstaller
   m_EditorClassIdentifier: 
-  _roomPoolConfig: {fileID: 11400000, guid: 24e3d6fb004602e4e80dffbb8c196b83, type: 2}
-  _hotelPoolConfig: {fileID: 11400000, guid: 0eb1adad151572f43a81b3657f2a674c, type: 2}
-  _supportsConfig: {fileID: 11400000, guid: 9cb3e52d37dcdca46b1f74a164bda0d3, type: 2}
-  _weightDistributionConfig: {fileID: 11400000, guid: a656abd24df396a4dbc2b803ff368abd, type: 2}
-  _roomsLayerMask:
+  roomPoolConfig: {fileID: 11400000, guid: 24e3d6fb004602e4e80dffbb8c196b83, type: 2}
+  hotelPoolConfig: {fileID: 11400000, guid: 0eb1adad151572f43a81b3657f2a674c, type: 2}
+  supportsConfig: {fileID: 11400000, guid: 9cb3e52d37dcdca46b1f74a164bda0d3, type: 2}
+  buildersConfig: {fileID: 11400000, guid: da7428652f3eb0a41828b35d578c6042, type: 2}
+  weightDistributionConfig: {fileID: 11400000, guid: a656abd24df396a4dbc2b803ff368abd, type: 2}
+  roomsLayerMask:
     serializedVersion: 2
     m_Bits: 64
-  _supportsLayerMask:
+  supportsLayerMask:
     serializedVersion: 2
     m_Bits: 128
-  _supportPrefab: {fileID: 1436670047565511337, guid: 3269d7e5f0ebfd348bfcb506eb5d716e, type: 3}
+  supportPrefab: {fileID: 1436670047565511337, guid: 3269d7e5f0ebfd348bfcb506eb5d716e, type: 3}

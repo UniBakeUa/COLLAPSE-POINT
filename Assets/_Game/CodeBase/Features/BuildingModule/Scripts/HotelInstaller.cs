@@ -13,43 +13,44 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
     [CreateAssetMenu(menuName = "Game/Installers/Features/" + nameof(HotelInstaller), fileName = nameof(HotelInstaller))]
     public class HotelInstaller : ScriptableObjectInstaller<HotelInstaller>
     {
-        [SerializeField] private RoomPoolConfig _roomPoolConfig;
-        [SerializeField] private HotelPoolConfig _hotelPoolConfig;
-        [SerializeField] private SupportsConfig _supportsConfig;
-        [SerializeField] private WeightDistributionConfig _weightDistributionConfig;
-        [SerializeField] private LayerMask _roomsLayerMask;
-        [SerializeField] private LayerMask _supportsLayerMask;
+        [SerializeField] private RoomPoolConfig roomPoolConfig;
+        [SerializeField] private HotelPoolConfig hotelPoolConfig;
+        [SerializeField] private SupportsConfig supportsConfig;
+        [SerializeField] private BuilderCrewConfig buildersConfig;
+        [SerializeField] private WeightDistributionConfig weightDistributionConfig;
+        [SerializeField] private LayerMask roomsLayerMask;
+        [SerializeField] private LayerMask supportsLayerMask;
         
-        [SerializeField] private Support _supportPrefab;
+        [SerializeField] private Support supportPrefab;
 
         public override void InstallBindings()
         {
             Container.DeclareSignal<RoomSpawnedSignal>();
             Container.DeclareSignal<SupportPlacedSignal>(); 
             
-            Container.Bind<RoomPoolConfig>().FromInstance(_roomPoolConfig).AsSingle();
-            Container.Bind<HotelPoolConfig>().FromInstance(_hotelPoolConfig).AsSingle();
+            Container.Bind<RoomPoolConfig>().FromInstance(roomPoolConfig).AsSingle();
+            Container.Bind<HotelPoolConfig>().FromInstance(hotelPoolConfig).AsSingle();
 
             Container.BindMemoryPool<Support, SupportPool>()
                 .WithInitialSize(10)
-                .FromComponentInNewPrefab(_supportPrefab)
+                .FromComponentInNewPrefab(supportPrefab)
                 .UnderTransformGroup("Supports");
             
             Container.Bind<WeightDistributionSystem>()
                 .AsSingle()
-                .WithArguments(_weightDistributionConfig, _roomsLayerMask)
+                .WithArguments(weightDistributionConfig, roomsLayerMask)
                 .NonLazy();
             
             Container.BindInterfacesAndSelfTo<RoomWeightInspector>()
                 .AsSingle()
-                .WithArguments(FindAnyObjectByType<Camera>(), _roomsLayerMask);//FindAnyObjectByType temp
+                .WithArguments(FindAnyObjectByType<Camera>(), roomsLayerMask);//FindAnyObjectByType temp
             
-            Container.Bind<RoomSpawner>().AsSingle().WithArguments(_supportsLayerMask);
+            Container.Bind<RoomSpawner>().AsSingle().WithArguments(supportsLayerMask);
 
-            Container.BindInterfacesAndSelfTo<SupportFactory>().AsSingle().WithArguments(_supportsConfig);
-            Container.Bind<SupportsGenerator>().AsSingle().WithArguments(_supportsConfig, _roomsLayerMask);
+            Container.BindInterfacesAndSelfTo<SupportFactory>().AsSingle().WithArguments(supportsConfig);
+            Container.Bind<SupportsGenerator>().AsSingle().WithArguments(supportsConfig, roomsLayerMask);
 
-            Container.Bind<BuilderCrewManager>().AsSingle();
+            Container.Bind<BuilderCrewManager>().AsSingle().WithArguments(buildersConfig);
         }
     }
 }
