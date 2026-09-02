@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b616fe126b84ea2bb1cfbf426907027, type: 3}
   m_Name: WeightDistributionConfig
   m_EditorClassIdentifier: Unibake.Features::_Game.CodeBase.Features.BuildingModule.Scripts.RoomsAndObjects.Data.WeightDistributionConfig
-  sideTransferFraction: 0.15
+  sideTransferFraction: 0.12
   detectionTolerance: 0.08
   minWeightToDistribute: 0.01
+  upTransferFraction: 1
+  enableUpwardTransfer: 1

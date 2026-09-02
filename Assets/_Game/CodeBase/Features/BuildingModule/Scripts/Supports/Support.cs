@@ -2,7 +2,7 @@ using System;
 using _Game.CodeBase.Features.BuildingModule.Scripts.Data;
 using UnityEngine;
 using Zenject;
-using _Game.CodeBase.Features.BuildingModule.Scripts.Supports;
+using _Game.CodeBase.Features.BuildingModule.Scripts.Weight;
 
 namespace _Game.CodeBase.Features.BuildingModule.Scripts
 {
@@ -20,7 +20,9 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
         public Vector3 Start => _startPoint;
         public Vector3 End => _endPoint;
 
-        public void Setup(SupportData data, SupportMaterialLevel material)
+        private WeightReceiver _targetWeightReceiver;
+        public WeightReceiver TargetWeightReceiver => _targetWeightReceiver;
+        public void Setup(SupportData data, SupportMaterialLevel material, WeightReceiver targetReceiver)
         {
             _startPoint = data.Start;
             _endPoint = data.End;
@@ -34,6 +36,8 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts
             _lineRenderer.startColor = material.visualColor;
             _lineRenderer.endColor = material.visualColor;
 
+            _targetWeightReceiver = targetReceiver;
+            
             _collider.points = new[]
             {
                 (Vector2)transform.InverseTransformPoint(_startPoint),

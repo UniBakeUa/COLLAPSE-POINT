@@ -29,7 +29,7 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
         private static readonly Collider2D[] OverlapBuffer = new Collider2D[16];
         private readonly ContactFilter2D _roomsContactFilter;
         private readonly ContactFilter2D _raycastContactFilter;
-
+        
         public SupportsGenerator(SupportsConfig config, ISupportFactory factory, LayerMask roomsLayerMask,
             RoomSpawner roomSpawner, SignalBus signalBus)
         {
@@ -175,7 +175,8 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
                 float preferredMaxLength = Mathf.Lerp(_config.maxLength, _config.minLength, progressT);
                 float currentMaxDist = horizontal ? (preferredMaxLength / 3f) : preferredMaxLength;
 
-                Vector2 actualEnd = PerformPhysicsRaycast(start, dir, currentMaxDist, parentRoot);
+                WeightReceiver targetReceiver = null;
+                Vector2 actualEnd = PerformPhysicsRaycast(start, dir, currentMaxDist, parentRoot, out targetReceiver);
 
                 if (actualEnd == Vector2.zero) continue;
 
@@ -197,7 +198,7 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
 
                 int levelIndex = Mathf.RoundToInt(progressT * (_config.materialLevels.Count - 1));
                 var material = _config.GetLevel(levelIndex);
-                var instance = _factory.Create(finalData, material);
+                var instance = _factory.Create(finalData, material, targetReceiver);
 
                 _activeSupports[compositeId] = finalData;
                 _activeInstances[compositeId] = instance;
@@ -217,7 +218,8 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
                 UpgradeLowestLevelSupport(receiver);
             }
         }
-
+        public bool TryGetSupportInstance(int supportId, out Support instance) =>
+            _activeInstances.TryGetValue(supportId, out instance);
         private bool IsAngleDistinctEnough(WeightReceiver receiver, float newAngle)
         {
             foreach (var id in receiver.Data.AttachedSupportIds)
@@ -272,8 +274,9 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
             _signalBus.Fire(new SupportPlacedSignal { ReceiverId = receiver.Data.Id });
         }
 
-        private Vector2 PerformPhysicsRaycast(Vector2 start, Vector2 dir, float currentMaxDist, Transform ignoreRoot)
+        private Vector2 PerformPhysicsRaycast(Vector2 start, Vector2 dir, float currentMaxDist, Transform ignoreRoot, out WeightReceiver targetReceiver)
         {
+            targetReceiver = null;
             float verticality = Mathf.Abs(dir.y);
             float dynamicMaxDist = Mathf.Lerp(_config.minLength, currentMaxDist, verticality);
 
@@ -288,7 +291,8 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
                 if (hit.collider.isTrigger) continue;
                 if (ignoreRoot != null && hit.collider.transform.IsChildOf(ignoreRoot)) continue;
                 if (hit.distance < _config.minHitDistance) continue;
-
+                
+                targetReceiver = hit.collider.GetComponent<WeightReceiver>();
                 return hit.point;
             }
 
@@ -306,6 +310,9 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
                     var overlap = Physics2D.OverlapPoint(fallbackPoint, _config.maskToCollide);
                     if (overlap != null && (ignoreRoot == null || !overlap.transform.IsChildOf(ignoreRoot)))
                         return Vector2.zero;
+                    
+                    if (overlap != null)
+                        targetReceiver = overlap.GetComponent<WeightReceiver>();
 
                     return fallbackPoint;
                 }
@@ -369,7 +376,17 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
             currentLevel = lowestLevel;
             return true;
         }
-        
+        public bool CanEverHaveSupports(WeightReceiver receiver)
+        {
+            if (receiver.Data.AttachedSupportIds.Count > 0) return true;
+
+            bool hasCapacityRecord = _maxSupportsForReceiver.TryGetValue(receiver.Data.Id, out int maxCount);
+            bool result = !hasCapacityRecord || maxCount > 0;
+
+            Debug.Log($"[CanEverHaveSupports] Room #{receiver.Data.Id}: attachedCount=0, hasCapacityRecord={hasCapacityRecord}, maxCount={(hasCapacityRecord ? maxCount : -1)}, result={result}"); // ДОДАНО
+
+            return result;
+        }
         public float GetUpgradeBuildTime(int currentLevel)
         {
             int targetLevel = currentLevel + 1;

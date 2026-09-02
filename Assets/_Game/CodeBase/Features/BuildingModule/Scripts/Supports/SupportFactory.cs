@@ -1,4 +1,5 @@
 using _Game.CodeBase.Features.BuildingModule.Scripts.Data;
+using _Game.CodeBase.Features.BuildingModule.Scripts.Weight;
 
 namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
 {
@@ -13,10 +14,10 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Supports
             _config = config;
         }
 
-        public Support Create(SupportData data, SupportMaterialLevel material)
+        public Support Create(SupportData data, SupportMaterialLevel material, WeightReceiver targetReceiver)
         {
             var support = _pool.Spawn();
-            support.Setup(data, material);
+            support.Setup(data, material,targetReceiver);
             return support;
         }
     }

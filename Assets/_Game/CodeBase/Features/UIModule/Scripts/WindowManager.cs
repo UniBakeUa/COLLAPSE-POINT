@@ -26,7 +26,10 @@ namespace _Game.CodeBase.Features.UIModule.Scripts
         public void Tick() 
         {
             if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
                 TryCloseTop();
+                CloseMain(CurrentMain);
+            }
         }
 
         public T OpenMain<T>() where T : UIWindowViewBase
@@ -41,6 +44,16 @@ namespace _Game.CodeBase.Features.UIModule.Scripts
             CurrentMain = screen;
 
             return screen;
+        }
+        public void CloseMain(UIWindowViewBase window)
+        {
+            if (window == null) return;
+            
+            if (CurrentMain == window)
+            {
+                CurrentMain.Hide();
+                CurrentMain = null;
+            }
         }
 
         public T OpenOverlay<T>() where T : UIWindowViewBase
