@@ -68,7 +68,7 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.UI
                 $"Base weight: {data.BaseWeight:F2}\n" +
                 $"Received load: {data.ReceivedLoad:F2}\n" +
                 $"Not-stabilized load: {data.NotStabilizedLoad:F2}\n" +
-                $"Total: {data.TotalWeight + data.ReceivedLoad:F2}";
+                $"Total: {data.BaseWeight + data.ReceivedLoad:F2}";
         }
     }
 }

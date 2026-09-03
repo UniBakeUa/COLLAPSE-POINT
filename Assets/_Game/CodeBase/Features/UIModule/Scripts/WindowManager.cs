@@ -55,7 +55,17 @@ namespace _Game.CodeBase.Features.UIModule.Scripts
                 CurrentMain = null;
             }
         }
-
+        public void Toggle<T>() where T : UIWindowViewBase
+        {
+            if (CurrentMain != null && CurrentMain is T)
+            {
+                CloseMain(CurrentMain);
+            }
+            else
+            {
+                OpenMain<T>();
+            }
+        }
         public T OpenOverlay<T>() where T : UIWindowViewBase
         {
             var screen = GetScreen<T>();

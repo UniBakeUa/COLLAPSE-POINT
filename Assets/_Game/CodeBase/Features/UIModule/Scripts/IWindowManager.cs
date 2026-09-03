@@ -4,11 +4,13 @@ namespace _Game.CodeBase.Features.UIModule.Scripts
     {
         T OpenMain<T>() where T : UIWindowViewBase;
         T OpenOverlay<T>() where T : UIWindowViewBase;
+
         void CloseMain(UIWindowViewBase window);
         void CloseTopOverlay();
         void CloseAllOverlays();
-        bool TryCloseTop();
 
+        bool TryCloseTop();
+        void Toggle<T>() where T : UIWindowViewBase;
         UIWindowViewBase CurrentMain { get; }
         UIWindowViewBase TopOverlay { get; }
     }

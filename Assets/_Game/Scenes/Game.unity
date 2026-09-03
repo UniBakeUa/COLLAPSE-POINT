@@ -670,6 +670,9 @@ MonoBehaviour:
     AttachedSupportIds: 
   _spriteRenderer: {fileID: 170080316}
   _cachedSize: {x: 6, y: 6}
+  _normalColor: {r: 1, g: 1, b: 1, a: 1}
+  _overloadedColor: {r: 1, g: 0, b: 0, a: 1}
+  _stressVisualizationDivisor: 1
 --- !u!114 &170080321
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1819,6 +1822,9 @@ MonoBehaviour:
   _padding: 4
   _positionSmoothSpeed: 8
   _zoomSmoothSpeed: 8
+  _minOrthoSize: 2
+  _zoomSpeed: 5
+  _panSpeed: 0.01
 --- !u!114 &545533785
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3751,6 +3757,52 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 4952055986850992805, guid: 30f207dac2d61c74696136a7809e35c1, type: 3}
   m_PrefabInstance: {fileID: 1206499812}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1218923878
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1218923879}
+  - component: {fileID: 1218923880}
+  m_Layer: 0
+  m_Name: HotkeyHandler
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1218923879
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1218923878}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1338687738}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1218923880
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1218923878}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0a008721da24e84b0c321e4e8d19457, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unibake.Features::_Game.CodeBase.Features.UIModule.Scripts.UIHotkeysHandler
+  overviewKey: 31
+  upgradesKey: 19
 --- !u!1001 &1273153806
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3996,6 +4048,7 @@ Transform:
   m_Children:
   - {fileID: 1652261517}
   - {fileID: 990467923}
+  - {fileID: 1218923879}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1350611268

@@ -35,23 +35,35 @@ MonoBehaviour:
     maxLoad: 15
     buildTime: 1
     supportSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-    visualColor: {r: 0.74509805, g: 0.45098042, b: 0.227451, a: 1}
+    visualColor: {r: 0.9811321, g: 0.57881325, b: 0.27305093, a: 1}
     supportPrefab: {fileID: 868595195219381261, guid: 3269d7e5f0ebfd348bfcb506eb5d716e, type: 3}
   - name: lvl2
     maxLoad: 30
     buildTime: 3
     supportSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-    visualColor: {r: 0.5566038, g: 0.34092754, b: 0.17065683, a: 1}
+    visualColor: {r: 0.764151, g: 0.47356653, b: 0.24870951, a: 1}
     supportPrefab: {fileID: 868595195219381261, guid: 3269d7e5f0ebfd348bfcb506eb5d716e, type: 3}
   - name: lvl3
     maxLoad: 60
     buildTime: 5
     supportSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+    visualColor: {r: 0.5849056, g: 0.4090378, b: 0.2731399, a: 1}
+    supportPrefab: {fileID: 868595195219381261, guid: 3269d7e5f0ebfd348bfcb506eb5d716e, type: 3}
+  - name: lvl4
+    maxLoad: 100
+    buildTime: 7
+    supportSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
     visualColor: {r: 0.3584906, g: 0.27212915, b: 0.20461018, a: 1}
     supportPrefab: {fileID: 868595195219381261, guid: 3269d7e5f0ebfd348bfcb506eb5d716e, type: 3}
-  maxPlacementAttempts: 50
+  - name: lvl5
+    maxLoad: 150
+    buildTime: 10
+    supportSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+    visualColor: {r: 0.3584906, g: 0.27212915, b: 0.20461018, a: 1}
+    supportPrefab: {fileID: 868595195219381261, guid: 3269d7e5f0ebfd348bfcb506eb5d716e, type: 3}
+  maxPlacementAttempts: 100
   startPointFailStreakLimit: 20
-  freeSpaceScanSamples: 8
+  freeSpaceScanSamples: 16
   freeSegmentPointAttempts: 30
   raycastOriginOffset: 0.05
   raycastRadius: 0.02

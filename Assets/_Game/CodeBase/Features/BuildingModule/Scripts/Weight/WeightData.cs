@@ -16,7 +16,6 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.RoomsAndObjects
         public float NotStabilizedLoad { get; private set; }
         public float ReceivedLoad { get; private set; }
         public float BaseWeight => _baseWeight;
-        public float TotalWeight => _baseWeight + ReceivedLoad;
         
         public List<int> AttachedSupportIds = new();
         

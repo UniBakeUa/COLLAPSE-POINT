@@ -251,7 +251,7 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Weight
                     continue;
                 }
 
-                float totalWeight = receiver.Data.TotalWeight + incomingLoad;
+                float totalWeight = receiver.Data.BaseWeight + incomingLoad;
 
                 List<Edge> validEdges = new List<Edge>();
                 if (_forwardEdges.TryGetValue(id, out var outEdges) && _cost.TryGetValue(id, out int currentCost))

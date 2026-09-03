@@ -10,7 +10,7 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Weight
     public class WeightReceiver : MonoBehaviour
     {
         private const float SizeGridUnit = 0.5f;
-        
+
         [field: SerializeField] private BoxCollider2D _boxCollider;
         [field: SerializeField] public WeightData Data { get; private set; } = new();
 
@@ -18,6 +18,12 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Weight
 
         [SerializeField, HideInInspector] private Vector2 _cachedSize = Vector2.one;
         private InfiniteAnchorReceiver _infiniteAnchor;
+
+        [Header("Stress Visualization")] // ДОДАНО
+        [SerializeField] private Color _normalColor = Color.white; // ДОДАНО
+        [SerializeField] private Color _overloadedColor = Color.red; // ДОДАНО
+        [SerializeField] private float _stressVisualizationDivisor = 1f; // ДОДАНО: наскільки NotStabilizedLoad/TotalWeight має бути, щоб дійти до 100% червоного
+
         public BoxCollider2D BoxCollider => _boxCollider;
         public bool IsInfiniteAnchor => _infiniteAnchor != null;
         public Transform Transform => transform;
@@ -27,6 +33,34 @@ namespace _Game.CodeBase.Features.BuildingModule.Scripts.Weight
             Data.Position = transform.position;
             TryGetComponent<InfiniteAnchorReceiver>(out var infiniteAnchor);
             _infiniteAnchor = infiniteAnchor;
+
+            Data.OnWeightChanged += RefreshStressVisual; // ДОДАНО
+        }
+
+        private void OnDestroy() // ДОДАНО
+        {
+            Data.OnWeightChanged -= RefreshStressVisual;
+        }
+
+        // ДОДАНО: 0 = без навантаження, 1+ = повністю перевантажена (клемпиться для кольору)
+        public float GetStressFactor()
+        {
+            if (IsInfiniteAnchor) return 0f;
+
+            float total = Data.BaseWeight + Data.ReceivedLoad;
+            if (total <= 0f) return 0f;
+
+            float divisor = Mathf.Max(_stressVisualizationDivisor, 0.0001f);
+            return Data.NotStabilizedLoad / (total * divisor);
+        }
+
+        // ДОДАНО: перефарбовує спрайт від normalColor до overloadedColor залежно від стресу
+        private void RefreshStressVisual()
+        {
+            if (_spriteRenderer == null) return;
+
+            float stress = Mathf.Clamp01(GetStressFactor());
+            _spriteRenderer.color = Color.Lerp(_normalColor, _overloadedColor, stress);
         }
 
         private void UpdateSize()

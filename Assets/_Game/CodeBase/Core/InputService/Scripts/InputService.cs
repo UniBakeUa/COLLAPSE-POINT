@@ -13,11 +13,12 @@ namespace _Game.Core.InputSystemModule.Scripts
         public event Action<Vector2> OnDragging;
         public event Action OnDragEnd;
         public event Action OnLayoutChange;
-
+        public event Action<float> OnScroll;
         public InputSystemm_Actions GameInput { get; private set; }
         public Layout CurrentLayout { get; private set; }
 
         private Vector2 _startMousePosition;
+        private Vector2 _lastMousePosition;
         private bool _isPotentialDrag;
         private bool _isDragging;
         private const float DragThreshold = 10f;
@@ -38,6 +39,22 @@ namespace _Game.Core.InputSystemModule.Scripts
         }
         public void Tick()
         {
+            if (_isPotentialDrag || _isDragging)
+            {
+                Vector2 currentPos = GetPointerPosition();
+
+                if (_isDragging)
+                {
+                    Vector2 delta = currentPos - _lastMousePosition;
+                    OnDragging?.Invoke(delta);
+                }
+                else
+                {
+                    CheckForDragStart(currentPos);
+                }
+
+                _lastMousePosition = currentPos;
+            }
             if (!_pendingSimpleClick) return;
 
             _pendingSimpleClick = false;
@@ -79,8 +96,18 @@ namespace _Game.Core.InputSystemModule.Scripts
         {
             GameInput.Gameplay.Click.started += OnPressStarted;
             GameInput.Gameplay.Click.canceled += OnPressCanceled;
+            GameInput.Gameplay.Scroll.performed += OnScrollPerformed;
         }
-
+        private void OnScrollPerformed(InputAction.CallbackContext ctx)
+        {
+            if (IsPointerOverUI()) return;
+            
+            float scrollValue = ctx.ReadValue<Vector2>().y;
+            if (Mathf.Abs(scrollValue) > 0.01f)
+            {
+                OnScroll?.Invoke(scrollValue);
+            }
+        }
         private void OnPressStarted(InputAction.CallbackContext ctx)
         {
             _startMousePosition = GetPointerPosition();

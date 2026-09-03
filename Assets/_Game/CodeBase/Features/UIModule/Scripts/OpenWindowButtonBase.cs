@@ -7,7 +7,7 @@ namespace _Game.CodeBase.Features.UIModule.Scripts
     public abstract class OpenWindowButtonBase<T> : MonoBehaviour where T : UIWindowViewBase
     {
         [SerializeField] private Button _button;
-        [SerializeField] private bool _isOverlay;
+        [SerializeField] protected bool _isOverlay;
 
         protected IWindowManager WindowManager;
 
@@ -27,7 +27,7 @@ namespace _Game.CodeBase.Features.UIModule.Scripts
             _button.onClick.RemoveListener(OnClick);
         }
 
-        private void OnClick()
+        protected virtual void OnClick()
         {
             var screen = _isOverlay ? WindowManager.OpenOverlay<T>() : WindowManager.OpenMain<T>();
             OnWindowOpened(screen);
